@@ -96,6 +96,17 @@ the override changes for the `aembit_api_client` library.
 
 ## Testing the provider
 
+In order to authenticate with the Aembit Client API, we need to set the following
+environment variables:
+
+```
+AEMBIT_HOST=xxxxx
+AEMBIT_TOKEN=yyyyy
+```
+
+These values can be retrieved from the Aembit Console UI. Alternatively, they can
+be added to the provider block in your test `.tf` files.
+
 Example Terraform templates are under the `examples` directory. For example:
 
 ```shell
