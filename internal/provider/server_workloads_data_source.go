@@ -32,14 +32,10 @@ type serverWorkloadsDataSourceModel struct {
 }
 
 type serverWorkloadModel struct {
-	EntityDTO       entityDTOModel       `tfsdk:"entity_dto"`
+	ExternalId      types.String         `tfsdk:"external_id"`
+	Name            types.String         `tfsdk:"name"`
 	ServiceEndpoint serviceEndpointModel `tfsdk:"service_endpoint"`
 	Type            types.String         `tfsdk:"type"`
-}
-
-type entityDTOModel struct {
-	ExternalId types.String `tfsdk:"external_id"`
-	Name       types.String `tfsdk:"name"`
 }
 
 // serviceEndpointModel maps service endpoint data.
@@ -82,19 +78,13 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"entity_dto": schema.SingleNestedAttribute{
-							Description: "Server Workload Entity details.",
+						"external_id": schema.StringAttribute{
+							Description: "Alphanumeric identifier of the server workload.",
 							Computed:    true,
-							Attributes: map[string]schema.Attribute{
-								"external_id": schema.StringAttribute{
-									Description: "Alphanumeric identifier of the server workload.",
-									Computed:    true,
-								},
-								"name": schema.StringAttribute{
-									Description: "User-provided name of the server workload.",
-									Computed:    true,
-								},
-							},
+						},
+						"name": schema.StringAttribute{
+							Description: "User-provided name of the server workload.",
+							Computed:    true,
 						},
 						"type": schema.StringAttribute{
 							Description: "Type of server workload.",
@@ -137,12 +127,9 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 	// Map response body to model
 	for _, server_workload := range server_workloads {
 		serverWorkloadState := serverWorkloadModel{
-			Type: types.StringValue(server_workload.Type),
-		}
-
-		serverWorkloadState.EntityDTO = entityDTOModel{
 			ExternalId: types.StringValue(server_workload.EntityDTO.ExternalId),
 			Name:       types.StringValue(server_workload.EntityDTO.Name),
+			Type:       types.StringValue(server_workload.Type),
 		}
 
 		serverWorkloadState.ServiceEndpoint = serviceEndpointModel{
