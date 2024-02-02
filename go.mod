@@ -1,6 +1,6 @@
-module github.com/hashicorp/terraform-provider-scaffolding-framework
+module terraform-provider-aembit
 
-go 1.20
+go 1.21.0
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
@@ -72,3 +72,4 @@ require (
 	google.golang.org/grpc v1.61.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 )
+

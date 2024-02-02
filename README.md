@@ -1,51 +1,110 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Aembit Terraform Provider
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
-
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
-
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
-
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. Tutorials for creating Terraform providers can be found on the [HashiCorp Developer](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework) platform. _Terraform Plugin Framework specific guides are titled accordingly._
-
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
-
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing) so that others can use it.
+This repository houses the Aembit Terraform Provider source. This code is under development.
 
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
 - [Go](https://golang.org/doc/install) >= 1.20
 
+## Getting Started
+
+Since both the Aembit API client code and the Terraform provider code are under development, we
+will need to use local copies of these repositories for development.
+
+### Clone the Aembit API client code
+
+```shell
+cd ~/src
+git clone git@github.com:Aembit/aembit_api_client.git
+```
+
+### Override the Golang module dependency
+
+Since our API Client code is not published, we will use a local copy of the library, and tell
+our Terraform code to use a local copy of the module.
+
+Assuming that both the Terraform provider repository and the API client library repository are
+both cloned under `~src`, redirect the Aembit API client module reference as follows:
+
+```shell
+go mod edit -replace aembit.io/aembit=../aembit_api_client
+```
+
+This command will modify `go.mod`; you will see a line like the following:
+
+> replace aembit.io/aembit => ../aembit_api_client
+
+After modifying go.mod, retrieve the local Aembit API client module.
+
+```shell
+go get aembit.io/aembit
+```
+
+You should see output like the following:
+
+> go: added aembit.io/aembit v0.0.0-00010101000000-000000000000
+
+### Modify Terraform configuration to use local Provider code
+
+Since our Terraform provider code is not published, we will tell our Terraform binary to use the
+local provider code.
+
+Edit `~/.terraformrc` so that it looks like the following:
+
+```
+provider_installation {
+
+  dev_overrides {
+      "aembit.io/dev/aembit" = "/Users/jkwon/go/bin"
+  }
+
+  # For all other providers, install them directly from their origin provider
+  # registries as normal. If you omit this, Terraform will _only_ use
+  # the dev_overrides block, and so no other providers will be available.
+  direct {}
+}
+```
+
+Replace the Golang path with the path appropriate for your system.
+
 ## Building The Provider
 
-1. Clone the repository
-1. Enter the repository directory
+Most provider-related files will be under the `internal/provider` directory. After
+adding new files to that directory, or modifying files under that directory, build
+the provider.
+
+1. `cd` to the Terraform provider repository directory
 1. Build the provider using the Go `install` command:
 
 ```shell
-go install
+go install .
 ```
 
 ## Adding Dependencies
 
-This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up to date information about using Go modules.
-
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
+Besides the Aembit API client library (which is local), if you need to use any
+additional modules:
 
 ```shell
 go get github.com/author/dependency
 go mod tidy
 ```
 
-Then commit the changes to `go.mod` and `go.sum`.
+Then commit the changes to `go.mod` and `go.sum`. However, do <b>not</b> commit
+the override changes for the `aembit_api_client` library.
 
-## Using the provider
+## Testing the provider
 
-Fill this in for each provider
+Example Terraform templates are under the `examples` directory. For example:
+
+```shell
+cd examples/server-workloads
+terraform plan
+```
+
+To test additional resources and datasources, create new directories under the `examples`
+and implement your Terraform template there.
 
 ## Developing the Provider
 
