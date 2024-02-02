@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure AembitProvider satisfies various provider interfaces.
@@ -64,6 +65,8 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 }
 
 func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	tflog.Info(ctx, "Configuring HashiCups client")
+
 	// Retrieve provider data from configuration
 	var config aembitProviderModel
 	diags := req.Config.Get(ctx, &config)
@@ -138,6 +141,12 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
+	ctx = tflog.SetField(ctx, "aembit_host", host)
+	ctx = tflog.SetField(ctx, "aembit_token", token)
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "aembit_token")
+
+	tflog.Debug(ctx, "Creating Aembit client")
+
 	// Create a new Aembit client using the configuration values
 	client, err := aembit.NewClient(&host, &token)
 	if err != nil {
@@ -154,6 +163,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// type Configure methods.
 	resp.DataSourceData = client
 	resp.ResourceData = client
+
+	tflog.Info(ctx, "Configured Aembit client", map[string]any{"success": true})
 }
 
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
