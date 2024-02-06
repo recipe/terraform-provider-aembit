@@ -168,7 +168,9 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 }
 
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		NewServerWorkloadResource,
+	}
 }
 
 func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.DataSource {

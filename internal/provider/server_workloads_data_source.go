@@ -40,8 +40,13 @@ type serverWorkloadModel struct {
 
 // serviceEndpointModel maps service endpoint data.
 type serviceEndpointModel struct {
-	ExternalId types.String `tfsdk:"external_id"`
-	Host       types.String `tfsdk:"host"`
+	ExternalId        types.String `tfsdk:"external_id"`
+	Host              types.String `tfsdk:"host"`
+	Port              types.Int64  `tfsdk:"port"`
+	AppProtocol       types.String `tfsdk:"app_protocol"`
+	TransportProtocol types.String `tfsdk:"transport_protocol"`
+	RequestedPort     types.Int64  `tfsdk:"requested_port"`
+	TlsVerification   types.String `tfsdk:"tls_verification"`
 }
 
 // Configure adds the provider configured client to the data source.
