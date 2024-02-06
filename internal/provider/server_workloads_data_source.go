@@ -107,6 +107,26 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "hostname of the service endpoint.",
 									Computed:    true,
 								},
+								"port": schema.Int64Attribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"app_protocol": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"requested_port": schema.Int64Attribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"tls_verification": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"transport_protocol": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
 							},
 						},
 					},
@@ -138,8 +158,13 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 		}
 
 		serverWorkloadState.ServiceEndpoint = serviceEndpointModel{
-			ExternalId: types.StringValue(server_workload.ServiceEndpoint.ExternalId),
-			Host:       types.StringValue(server_workload.ServiceEndpoint.Host),
+			ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
+			Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
+			Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
+			AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
+			TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
+			RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
+			TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 		}
 
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)

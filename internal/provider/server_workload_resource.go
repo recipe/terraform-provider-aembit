@@ -215,6 +215,71 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverWorkloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Get current state
+	var state serverWorkloadResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Extract external ID from state
+	var external_id string
+	external_id = state.ExternalId.ValueString()
+
+	// Retrieve values from plan
+	var plan serverWorkloadResourceModel
+	diags = req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Generate API request body from plan
+	var workload aembit.ServerWorkloadExternalDTO
+	workload.EntityDTO = aembit.EntityDTO{
+		ExternalId: external_id,
+		Name:       plan.Name.ValueString(),
+	}
+	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
+		Host:              plan.ServiceEndpoint.Host.ValueString(),
+		Port:              int(plan.ServiceEndpoint.Port.ValueInt64()),
+		AppProtocol:       plan.ServiceEndpoint.AppProtocol.ValueString(),
+		TransportProtocol: plan.ServiceEndpoint.TransportProtocol.ValueString(),
+		RequestedPort:     int(plan.ServiceEndpoint.RequestedPort.ValueInt64()),
+		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
+	}
+
+	// Update order
+	server_workload, err := r.client.UpdateServerWorkload(workload, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating server workload",
+			"Could not update server workload, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	// Map response body to schema and populate Computed attribute values
+	plan.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
+	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
+	plan.Type = types.StringValue(server_workload.Type)
+	plan.ServiceEndpoint = serviceEndpointModel{
+		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
+		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
+		Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
+		AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
+		TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
+		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
+		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
+	}
+
+	// Set state to fully populated data
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Delete deletes the resource and removes the Terraform state on success.

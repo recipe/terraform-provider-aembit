@@ -65,7 +65,7 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 }
 
 func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	tflog.Info(ctx, "Configuring HashiCups client")
+	tflog.Info(ctx, "Configuring Aembit client")
 
 	// Retrieve provider data from configuration
 	var config aembitProviderModel
