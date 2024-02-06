@@ -284,4 +284,21 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	var state serverWorkloadResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Delete existing order
+	_, err := r.client.DeleteServerWorkload(state.ExternalId.ValueString(), nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Deleting Server Workload",
+			"Could not delete server workload, unexpected error: "+err.Error(),
+		)
+		return
+	}
 }
