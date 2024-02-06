@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -12,17 +13,18 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &serverWorkloadResource{}
-	_ resource.ResourceWithConfigure = &serverWorkloadResource{}
+	_ resource.Resource                = &serverWorkloadResource{}
+	_ resource.ResourceWithConfigure   = &serverWorkloadResource{}
+	_ resource.ResourceWithImportState = &serverWorkloadResource{}
 )
 
 // serverWorkloadResourceModel maps the resource schema data.
 
 type serverWorkloadResourceModel struct {
-	ExternalId      types.String         `tfsdk:"external_id"`
-	Name            types.String         `tfsdk:"name"`
-	ServiceEndpoint serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String         `tfsdk:"type"`
+	ExternalId      types.String          `tfsdk:"external_id"`
+	Name            types.String          `tfsdk:"name"`
+	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
+	Type            types.String          `tfsdk:"type"`
 }
 
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
@@ -152,7 +154,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	plan.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
 	plan.Type = types.StringValue(server_workload.Type)
-	plan.ServiceEndpoint = serviceEndpointModel{
+	plan.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
 		Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
@@ -195,7 +197,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	state.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
 	state.Name = types.StringValue(server_workload.EntityDTO.Name)
 	state.Type = types.StringValue(server_workload.Type)
-	state.ServiceEndpoint = serviceEndpointModel{
+	state.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
 		Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
@@ -264,7 +266,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	plan.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
 	plan.Type = types.StringValue(server_workload.Type)
-	plan.ServiceEndpoint = serviceEndpointModel{
+	plan.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
 		Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
@@ -301,4 +303,10 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 		)
 		return
 	}
+}
+
+// Imports an existing resource by passing externalId
+func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import externalId and save to id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("external_id"), req, resp)
 }
