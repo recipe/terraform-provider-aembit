@@ -25,6 +25,9 @@ type serverWorkloadResourceModel struct {
 	Name            types.String          `tfsdk:"name"`
 	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
 	Type            types.String          `tfsdk:"type"`
+
+	// ID is required for Framework acceptance testing
+	ID types.String `tfsdk:"id"`
 }
 
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
@@ -66,6 +69,10 @@ func (r *serverWorkloadResource) Configure(_ context.Context, req resource.Confi
 func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			// ID field is required for Terraform Framework acceptance testing.
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
 			"external_id": schema.StringAttribute{
 				Description: "Alphanumeric identifier of the server workload.",
 				Computed:    true,
@@ -164,6 +171,9 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
+	// ID field is required for acceptance testing, and must be filled with a placeholder value.
+	plan.ID = types.StringValue("placeholder")
+
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -188,7 +198,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Server Workload",
-			"Could not read Aembit External ID "+state.ExternalId.ValueString()+": "+err.Error(),
+			"Could not read Aembit External ID from Terraform state "+state.ExternalId.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -206,6 +216,9 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
+
+	// ID field is required for acceptance testing, and must be filled with a placeholder value.
+	state.ID = types.StringValue("placeholder")
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -275,6 +288,9 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
+
+	// ID field is required for acceptance testing, and must be filled with a placeholder value.
+	plan.ID = types.StringValue("placeholder")
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
