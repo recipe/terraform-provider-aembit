@@ -32,10 +32,10 @@ type serverWorkloadsDataSourceModel struct {
 }
 
 type serverWorkloadModel struct {
-	ExternalId      types.String         `tfsdk:"external_id"`
-	Name            types.String         `tfsdk:"name"`
-	ServiceEndpoint serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String         `tfsdk:"type"`
+	ExternalId      types.String          `tfsdk:"external_id"`
+	Name            types.String          `tfsdk:"name"`
+	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
+	Type            types.String          `tfsdk:"type"`
 }
 
 // serviceEndpointModel maps service endpoint data.
@@ -157,7 +157,7 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Type:       types.StringValue(server_workload.Type),
 		}
 
-		serverWorkloadState.ServiceEndpoint = serviceEndpointModel{
+		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
 			ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 			Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
 			Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
