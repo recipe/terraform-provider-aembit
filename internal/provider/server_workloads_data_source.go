@@ -32,16 +32,21 @@ type serverWorkloadsDataSourceModel struct {
 }
 
 type serverWorkloadModel struct {
-	ExternalId      types.String         `tfsdk:"external_id"`
-	Name            types.String         `tfsdk:"name"`
-	ServiceEndpoint serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String         `tfsdk:"type"`
+	ExternalId      types.String          `tfsdk:"external_id"`
+	Name            types.String          `tfsdk:"name"`
+	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
+	Type            types.String          `tfsdk:"type"`
 }
 
 // serviceEndpointModel maps service endpoint data.
 type serviceEndpointModel struct {
-	ExternalId types.String `tfsdk:"external_id"`
-	Host       types.String `tfsdk:"host"`
+	ExternalId        types.String `tfsdk:"external_id"`
+	Host              types.String `tfsdk:"host"`
+	Port              types.Int64  `tfsdk:"port"`
+	AppProtocol       types.String `tfsdk:"app_protocol"`
+	TransportProtocol types.String `tfsdk:"transport_protocol"`
+	RequestedPort     types.Int64  `tfsdk:"requested_port"`
+	TlsVerification   types.String `tfsdk:"tls_verification"`
 }
 
 // Configure adds the provider configured client to the data source.
@@ -102,6 +107,26 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "hostname of the service endpoint.",
 									Computed:    true,
 								},
+								"port": schema.Int64Attribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"app_protocol": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"requested_port": schema.Int64Attribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"tls_verification": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
+								"transport_protocol": schema.StringAttribute{
+									Description: "hostname of the service endpoint.",
+									Computed:    true,
+								},
 							},
 						},
 					},
@@ -132,9 +157,14 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Type:       types.StringValue(server_workload.Type),
 		}
 
-		serverWorkloadState.ServiceEndpoint = serviceEndpointModel{
-			ExternalId: types.StringValue(server_workload.ServiceEndpoint.ExternalId),
-			Host:       types.StringValue(server_workload.ServiceEndpoint.Host),
+		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
+			ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
+			Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
+			Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
+			AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
+			TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
+			RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
+			TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 		}
 
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
