@@ -135,7 +135,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
-	// Create new order
+	// Create new Server Workload
 	server_workload, err := r.client.CreateServerWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -181,7 +181,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	// Get refreshed order value from Aembit
+	// Get refreshed workload value from Aembit
 	server_workload, err := r.client.GetServerWorkload(state.ExternalId.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -253,7 +253,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
-	// Update order
+	// Update Server Workload
 	server_workload, err := r.client.UpdateServerWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -298,7 +298,7 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Delete existing order
+	// Delete existing Server Workload
 	_, err := r.client.DeleteServerWorkload(state.ExternalId.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
