@@ -26,29 +26,6 @@ type serverWorkloadsDataSource struct {
 	client *aembit.Client
 }
 
-// serverWorkloadDataSourceModel maps the resource schema data.
-type serverWorkloadsDataSourceModel struct {
-	ServerWorkloads []serverWorkloadModel `tfsdk:"server_workloads"`
-}
-
-type serverWorkloadModel struct {
-	ExternalId      types.String          `tfsdk:"external_id"`
-	Name            types.String          `tfsdk:"name"`
-	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String          `tfsdk:"type"`
-}
-
-// serviceEndpointModel maps service endpoint data.
-type serviceEndpointModel struct {
-	ExternalId        types.String `tfsdk:"external_id"`
-	Host              types.String `tfsdk:"host"`
-	Port              types.Int64  `tfsdk:"port"`
-	AppProtocol       types.String `tfsdk:"app_protocol"`
-	TransportProtocol types.String `tfsdk:"transport_protocol"`
-	RequestedPort     types.Int64  `tfsdk:"requested_port"`
-	TlsVerification   types.String `tfsdk:"tls_verification"`
-}
-
 // Configure adds the provider configured client to the data source.
 func (d *serverWorkloadsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -83,6 +60,10 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						// ID field is required for Terraform Framework acceptance testing.
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
 						"external_id": schema.StringAttribute{
 							Description: "Alphanumeric identifier of the server workload.",
 							Computed:    true,
@@ -151,10 +132,12 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 
 	// Map response body to model
 	for _, server_workload := range server_workloads {
-		serverWorkloadState := serverWorkloadModel{
+		serverWorkloadState := serverWorkloadResourceModel{
 			ExternalId: types.StringValue(server_workload.EntityDTO.ExternalId),
 			Name:       types.StringValue(server_workload.EntityDTO.Name),
 			Type:       types.StringValue(server_workload.Type),
+			// ID field is required for acceptance testing, and must be filled with a placeholder value.
+			ID: types.StringValue("placeholder"),
 		}
 
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{

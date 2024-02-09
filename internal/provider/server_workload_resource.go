@@ -18,18 +18,6 @@ var (
 	_ resource.ResourceWithImportState = &serverWorkloadResource{}
 )
 
-// serverWorkloadResourceModel maps the resource schema data.
-
-type serverWorkloadResourceModel struct {
-	ExternalId      types.String          `tfsdk:"external_id"`
-	Name            types.String          `tfsdk:"name"`
-	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String          `tfsdk:"type"`
-
-	// ID is required for Framework acceptance testing
-	ID types.String `tfsdk:"id"`
-}
-
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
 func NewServerWorkloadResource() resource.Resource {
 	return &serverWorkloadResource{}
