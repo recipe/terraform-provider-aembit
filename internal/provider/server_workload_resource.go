@@ -18,18 +18,6 @@ var (
 	_ resource.ResourceWithImportState = &serverWorkloadResource{}
 )
 
-// serverWorkloadResourceModel maps the resource schema data.
-
-type serverWorkloadResourceModel struct {
-	ExternalId      types.String          `tfsdk:"external_id"`
-	Name            types.String          `tfsdk:"name"`
-	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String          `tfsdk:"type"`
-
-	// ID is required for Framework acceptance testing
-	ID types.String `tfsdk:"id"`
-}
-
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
 func NewServerWorkloadResource() resource.Resource {
 	return &serverWorkloadResource{}
@@ -147,7 +135,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
-	// Create new order
+	// Create new Server Workload
 	server_workload, err := r.client.CreateServerWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -171,8 +159,9 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	plan.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -193,7 +182,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	// Get refreshed order value from Aembit
+	// Get refreshed workload value from Aembit
 	server_workload, err := r.client.GetServerWorkload(state.ExternalId.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -217,8 +206,9 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	state.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	state.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -265,7 +255,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
-	// Update order
+	// Update Server Workload
 	server_workload, err := r.client.UpdateServerWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -289,8 +279,9 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	plan.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -310,7 +301,7 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Delete existing order
+	// Delete existing Server Workload
 	_, err := r.client.DeleteServerWorkload(state.ExternalId.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
