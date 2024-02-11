@@ -26,8 +26,6 @@ resource "aembit_server_workload" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify placeholder ID
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "id", "placeholder"),
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
 					// Verify Service Endpoint.
@@ -41,14 +39,16 @@ resource "aembit_server_workload" "test" {
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "external_id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "service_endpoint.external_id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 				),
 			},
 			// ImportState testing
-			//{
-			//	ResourceName:      "aembit_server_workload.test",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			{
+				ResourceName:      "aembit_server_workload.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: providerConfig + `

@@ -159,8 +159,9 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	plan.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -205,8 +206,9 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	state.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	state.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -277,8 +279,9 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
-	// ID field is required for acceptance testing, and must be filled with a placeholder value.
-	plan.ID = types.StringValue("placeholder")
+	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
+	// We will copy our externalId to this ID field.
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
