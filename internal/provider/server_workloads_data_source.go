@@ -62,9 +62,6 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Computed: true,
-						},
-						"external_id": schema.StringAttribute{
 							Description: "Alphanumeric identifier of the server workload.",
 							Computed:    true,
 						},
@@ -133,11 +130,9 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 	// Map response body to model
 	for _, server_workload := range server_workloads {
 		serverWorkloadState := serverWorkloadResourceModel{
-			ExternalId: types.StringValue(server_workload.EntityDTO.ExternalId),
-			Name:       types.StringValue(server_workload.EntityDTO.Name),
-			Type:       types.StringValue(server_workload.Type),
-			// ID field is required for acceptance testing, and must be filled with a placeholder value.
-			ID: types.StringValue("placeholder"),
+			ID:   types.StringValue(server_workload.EntityDTO.ExternalId),
+			Name: types.StringValue(server_workload.EntityDTO.Name),
+			Type: types.StringValue(server_workload.Type),
 		}
 
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{

@@ -4,13 +4,11 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 
 // serverWorkloadResourceModel maps the resource schema.
 type serverWorkloadResourceModel struct {
-	ExternalId      types.String          `tfsdk:"external_id"`
+	// ID is required for Framework acceptance testing
+	ID              types.String          `tfsdk:"id"`
 	Name            types.String          `tfsdk:"name"`
 	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
 	Type            types.String          `tfsdk:"type"`
-
-	// ID is required for Framework acceptance testing
-	ID types.String `tfsdk:"id"`
 }
 
 // serverWorkloadDataSourceModel maps the datasource schema.
