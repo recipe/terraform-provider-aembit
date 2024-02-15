@@ -59,9 +59,6 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Computed: true,
-			},
-			"external_id": schema.StringAttribute{
 				Description: "Alphanumeric identifier of the server workload.",
 				Computed:    true,
 			},
@@ -146,7 +143,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
 	plan.Type = types.StringValue(server_workload.Type)
 	plan.ServiceEndpoint = &serviceEndpointModel{
@@ -158,10 +155,6 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
-
-	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
-	// We will copy our externalId to this ID field.
-	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -183,17 +176,17 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed workload value from Aembit
-	server_workload, err := r.client.GetServerWorkload(state.ExternalId.ValueString(), nil)
+	server_workload, err := r.client.GetServerWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Server Workload",
-			"Could not read Aembit External ID from Terraform state "+state.ExternalId.ValueString()+": "+err.Error(),
+			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
 
 	// Overwrite items with refreshed state
-	state.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
+	state.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	state.Name = types.StringValue(server_workload.EntityDTO.Name)
 	state.Type = types.StringValue(server_workload.Type)
 	state.ServiceEndpoint = &serviceEndpointModel{
@@ -205,10 +198,6 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
-
-	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
-	// We will copy our externalId to this ID field.
-	state.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -230,7 +219,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 
 	// Extract external ID from state
 	var external_id string
-	external_id = state.ExternalId.ValueString()
+	external_id = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan serverWorkloadResourceModel
@@ -266,7 +255,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ExternalId = types.StringValue(server_workload.EntityDTO.ExternalId)
+	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
 	plan.Type = types.StringValue(server_workload.Type)
 	plan.ServiceEndpoint = &serviceEndpointModel{
@@ -278,10 +267,6 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
-
-	// ID field is required for acceptance testing, and must be filled with at least a placeholder value.
-	// We will copy our externalId to this ID field.
-	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -302,7 +287,7 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing Server Workload
-	_, err := r.client.DeleteServerWorkload(state.ExternalId.ValueString(), nil)
+	_, err := r.client.DeleteServerWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",
@@ -315,5 +300,5 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 // Imports an existing resource by passing externalId
 func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("external_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

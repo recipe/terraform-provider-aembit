@@ -36,7 +36,7 @@ resource "aembit_server_workload" "test" {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "external_id"),
+					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "service_endpoint.external_id"),
 					// Verify placeholder ID is set
