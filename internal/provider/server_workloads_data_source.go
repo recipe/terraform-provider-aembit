@@ -81,22 +81,22 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Type of server workload.",
 							Computed:    true,
 						},
-						"tags": schema.ListNestedAttribute{
-							Description: "List of Tags.",
-							Computed:    true,
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"key": schema.StringAttribute{
-										Description: "Tag key.",
-										Computed:    true,
-									},
-									"value": schema.StringAttribute{
-										Description: "Tag value.",
-										Computed:    true,
-									},
-								},
-							},
-						},
+						//"tags": schema.ListNestedAttribute{
+						//	Description: "List of Tags.",
+						//	Computed:    true,
+						//	NestedObject: schema.NestedAttributeObject{
+						//		Attributes: map[string]schema.Attribute{
+						//			"key": schema.StringAttribute{
+						//				Description: "Tag key.",
+						//				Computed:    true,
+						//			},
+						//			"value": schema.StringAttribute{
+						//				Description: "Tag value.",
+						//				Computed:    true,
+						//			},
+						//		},
+						//	},
+						//},
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,
@@ -114,67 +114,49 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Computed:    true,
 								},
 								"port": schema.Int64Attribute{
-									Description: "hostname of the service endpoint.",
+									Description: "port of the service endpoint.",
 									Computed:    true,
 								},
 								"app_protocol": schema.StringAttribute{
-									Description: "hostname of the service endpoint.",
+									Description: "protocol of the service endpoint.",
 									Computed:    true,
 								},
 								"requested_port": schema.Int64Attribute{
-									Description: "hostname of the service endpoint.",
+									Description: "requested port of the service endpoint.",
 									Computed:    true,
 								},
 								"requested_tls": schema.BoolAttribute{
-									Description: "hostname of the service endpoint.",
+									Description: "requested tls of the service endpoint.",
 									Computed:    true,
 								},
 								"tls_verification": schema.StringAttribute{
-									Description: "hostname of the service endpoint.",
+									Description: "tls verification of the service endpoint.",
 									Computed:    true,
 								},
 								"transport_protocol": schema.StringAttribute{
-									Description: "hostname of the service endpoint.",
+									Description: "transport protocol of the service endpoint.",
 									Computed:    true,
 								},
 								"tls": schema.BoolAttribute{
-									Description: "hostname of the service endpoint.",
+									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
-								"http_headers": schema.ListNestedAttribute{
-									Description: "List of HTTP headers.",
-									Computed:    true,
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"key": schema.StringAttribute{
-												Description: "HTTP Header Key.",
-												Computed:    true,
-											},
-											"value": schema.StringAttribute{
-												Description: "HTTP Header value.",
-												Computed:    true,
-											},
-										},
-									},
-								},
-								"workload_service_authentication": schema.SingleNestedAttribute{
-									Description: "Service authentication details.",
-									Computed:    true,
-									Attributes: map[string]schema.Attribute{
-										"method": schema.StringAttribute{
-											Description: "Service authentication method.",
-											Computed:    true,
-										},
-										"scheme": schema.StringAttribute{
-											Description: "Service authentication method.",
-											Computed:    true,
-										},
-										"config": schema.StringAttribute{
-											Description: "Service authentication method.",
-											Computed:    true,
-										},
-									},
-								},
+								//"http_headers": schema.ListNestedAttribute{
+								//	Description: "List of HTTP headers.",
+								//	Computed:    true,
+								//	NestedObject: schema.NestedAttributeObject{
+								//		Attributes: map[string]schema.Attribute{
+								//			"key": schema.StringAttribute{
+								//				Description: "HTTP Header Key.",
+								//				Computed:    true,
+								//			},
+								//			"value": schema.StringAttribute{
+								//				Description: "HTTP Header value.",
+								//				Computed:    true,
+								//			},
+								//		},
+								//	},
+								//},
 							},
 						},
 					},
@@ -207,15 +189,6 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Type:        types.StringValue(server_workload.Type),
 		}
 
-		for _, tag := range server_workload.EntityDTO.Tags {
-			tagState := tagModel{
-				Key:   types.StringValue(tag.Key),
-				Value: types.StringValue(tag.Value),
-			}
-
-			serverWorkloadState.Tags = append(serverWorkloadState.Tags, tagState)
-		}
-
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
 			ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 			Id:                types.Int64Value(int64(server_workload.ServiceEndpoint.Id)),
@@ -229,22 +202,17 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 		}
 
-		for _, header := range server_workload.ServiceEndpoint.HttpHeaders {
-			headerState := keyValueModel{
-				Key:   types.StringValue(header.Key),
-				Value: types.StringValue(header.Value),
-			}
+		/*
+			 * GetServerWorkloads does not return WorkloadServiceAuthentication information.
+			if server_workload.ServiceEndpoint.WorkloadServiceAuthentication != nil {
+				serverWorkloadState.ServiceEndpoint.WorkloadServiceAuthentication = workloadServiceAuthenticationModel{
+					Method: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Method),
+					Scheme: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
+					Config: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Config),
+				}
 
-			serverWorkloadState.ServiceEndpoint.HttpHeaders = append(serverWorkloadState.ServiceEndpoint.HttpHeaders, headerState)
-		}
-
-		if server_workload.ServiceEndpoint.WorkloadServiceAuthentication != nil {
-			serverWorkloadState.ServiceEndpoint.WorkloadServiceAuthentication = &workloadServiceAuthenticationModel{
-				Method: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Method),
-				Scheme: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
-				Config: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Config),
 			}
-		}
+		*/
 
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}

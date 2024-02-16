@@ -9,7 +9,6 @@ type serverWorkloadResourceModel struct {
 	Name            types.String          `tfsdk:"name"`
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
-	Tags            []tagModel            `tfsdk:"tags"`
 	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
 	Type            types.String          `tfsdk:"type"`
 }
@@ -31,9 +30,8 @@ type serviceEndpointModel struct {
 	Port              types.Int64  `tfsdk:"port"`
 	Tls               types.Bool   `tfsdk:"tls"`
 
-	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
-	TlsVerification               types.String                        `tfsdk:"tls_verification"`
-	HttpHeaders                   []keyValueModel                     `tfsdk:"http_headers"`
+	//WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
+	TlsVerification types.String `tfsdk:"tls_verification"`
 }
 
 // workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.

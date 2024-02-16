@@ -66,6 +66,16 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "User-provided name of the server workload.",
 				Required:    true,
 			},
+			"description": schema.StringAttribute{
+				Description: "User-provided description of the server workload.",
+				Optional:    true,
+				Computed:    true,
+			},
+			"is_active": schema.BoolAttribute{
+				Description: "Active/Inactive status of the server workload.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"type": schema.StringAttribute{
 				Description: "Type of server workload.",
 				Computed:    true,
@@ -78,29 +88,43 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Description: "Alphanumeric identifier of the service endpoint.",
 						Computed:    true,
 					},
+					"id": schema.Int64Attribute{
+						Description: "Number identifier of the service endpoint.",
+						Computed:    true,
+					},
 					"host": schema.StringAttribute{
 						Description: "hostname of the service endpoint.",
 						Required:    true,
 					},
 					"port": schema.Int64Attribute{
-						Description: "hostname of the service endpoint.",
+						Description: "port of the service endpoint.",
 						Required:    true,
 					},
 					"app_protocol": schema.StringAttribute{
-						Description: "hostname of the service endpoint.",
+						Description: "protocol of the service endpoint.",
 						Required:    true,
 					},
 					"requested_port": schema.Int64Attribute{
-						Description: "hostname of the service endpoint.",
+						Description: "requested port of the service endpoint.",
 						Required:    true,
 					},
 					"tls_verification": schema.StringAttribute{
-						Description: "hostname of the service endpoint.",
+						Description: "tls verification of the service endpoint.",
 						Required:    true,
 					},
 					"transport_protocol": schema.StringAttribute{
-						Description: "hostname of the service endpoint.",
+						Description: "transport protocol of the service endpoint.",
 						Required:    true,
+					},
+					"requested_tls": schema.BoolAttribute{
+						Description: "tls requested on the service endpoint.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"tls": schema.BoolAttribute{
+						Description: "tls indicated on the service endpoint.",
+						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
@@ -121,14 +145,20 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	// Generate API request body from plan
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
-		Name: plan.Name.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Description: plan.Description.ValueString(),
+		IsActive:    plan.IsActive.ValueBool(),
 	}
+
 	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
 		Host:              plan.ServiceEndpoint.Host.ValueString(),
+		Id:                int(plan.ServiceEndpoint.Id.ValueInt64()),
 		Port:              int(plan.ServiceEndpoint.Port.ValueInt64()),
 		AppProtocol:       plan.ServiceEndpoint.AppProtocol.ValueString(),
 		TransportProtocol: plan.ServiceEndpoint.TransportProtocol.ValueString(),
 		RequestedPort:     int(plan.ServiceEndpoint.RequestedPort.ValueInt64()),
+		RequestedTls:      plan.ServiceEndpoint.RequestedTls.ValueBool(),
+		Tls:               plan.ServiceEndpoint.Tls.ValueBool(),
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
@@ -145,7 +175,10 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
+	plan.Description = types.StringValue(server_workload.EntityDTO.Description)
+	plan.IsActive = types.BoolValue(server_workload.EntityDTO.IsActive)
 	plan.Type = types.StringValue(server_workload.Type)
+
 	plan.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
@@ -153,6 +186,8 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 		AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
 		TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
+		RequestedTls:      types.BoolValue(server_workload.ServiceEndpoint.RequestedTls),
+		Tls:               types.BoolValue(server_workload.ServiceEndpoint.Tls),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
@@ -165,7 +200,6 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 }
 
 // Read refreshes the Terraform state with the latest data.
-// Read resource information.
 func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
 	var state serverWorkloadResourceModel
@@ -188,7 +222,10 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	// Overwrite items with refreshed state
 	state.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	state.Name = types.StringValue(server_workload.EntityDTO.Name)
+	state.Description = types.StringValue(server_workload.EntityDTO.Description)
+	state.IsActive = types.BoolValue(server_workload.EntityDTO.IsActive)
 	state.Type = types.StringValue(server_workload.Type)
+
 	state.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
 		Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
@@ -196,6 +233,8 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 		AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
 		TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
+		RequestedTls:      types.BoolValue(server_workload.ServiceEndpoint.RequestedTls),
+		Tls:               types.BoolValue(server_workload.ServiceEndpoint.Tls),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
 	}
 
@@ -232,8 +271,10 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	// Generate API request body from plan
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
-		ExternalId: external_id,
-		Name:       plan.Name.ValueString(),
+		ExternalId:  external_id,
+		Name:        plan.Name.ValueString(),
+		Description: plan.Description.ValueString(),
+		IsActive:    plan.IsActive.ValueBool(),
 	}
 	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
 		Host:              plan.ServiceEndpoint.Host.ValueString(),
@@ -241,6 +282,8 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		AppProtocol:       plan.ServiceEndpoint.AppProtocol.ValueString(),
 		TransportProtocol: plan.ServiceEndpoint.TransportProtocol.ValueString(),
 		RequestedPort:     int(plan.ServiceEndpoint.RequestedPort.ValueInt64()),
+		RequestedTls:      plan.ServiceEndpoint.RequestedTls.ValueBool(),
+		Tls:               plan.ServiceEndpoint.Tls.ValueBool(),
 		TlsVerification:   plan.ServiceEndpoint.TlsVerification.ValueString(),
 	}
 
@@ -257,6 +300,8 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(server_workload.EntityDTO.ExternalId)
 	plan.Name = types.StringValue(server_workload.EntityDTO.Name)
+	plan.Description = types.StringValue(server_workload.EntityDTO.Description)
+	plan.IsActive = types.BoolValue(server_workload.EntityDTO.IsActive)
 	plan.Type = types.StringValue(server_workload.Type)
 	plan.ServiceEndpoint = &serviceEndpointModel{
 		ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
@@ -266,6 +311,8 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 		TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
 		RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
 		TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
+		RequestedTls:      types.BoolValue(server_workload.ServiceEndpoint.RequestedTls),
+		Tls:               types.BoolValue(server_workload.ServiceEndpoint.Tls),
 	}
 
 	// Set state to fully populated data
@@ -283,6 +330,15 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Check if Server Workload is Active
+	if state.IsActive == types.BoolValue(true) {
+		resp.Diagnostics.AddError(
+			"Error Deleting Server Workload",
+			"Server Workload is active and cannot be deleted. Please mark the workload as inactive first.",
+		)
 		return
 	}
 
