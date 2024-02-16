@@ -11,6 +11,8 @@ provider "aembit" {
 
 resource "aembit_server_workload" "edu" {
     name = "terraform server workload2"
+    description = "new server workload"
+    is_active = false
     service_endpoint = {
         host = "myhost.jason.com"
         port = 443
@@ -18,6 +20,8 @@ resource "aembit_server_workload" "edu" {
         transport_protocol = "TCP"
         requested_port = 80
         tls_verification = "full"
+	    requested_tls = true
+	    tls = true
     }
 }
 
