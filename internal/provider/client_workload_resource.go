@@ -186,41 +186,43 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	state.Type = types.StringValue(client_workload.Type)
 
 	// Check for changes in the Identities list.
+	var mismatch bool = false
 	if len(state.Identities) != len(client_workload.Identities) {
 		// The count of Identities on the backend is different from the Terraform state.
 		// Replace the state with the backend configuration.
 		tflog.Debug(ctx, "Count of Client Workload identities differs from Terraform state.")
-		for _, identityItem := range client_workload.Identities {
-			state.Identities = append(state.Identities, identitiesModel{
-				Type:  types.StringValue(identityItem.Type),
-				Value: types.StringValue(identityItem.Value),
-			})
-		}
+		// Mark mismatch to override Terraform state with backend configuration.
+		mismatch = true
 	}
 	// Compare the identity list contents between backend and Terraform state.
-	var mismatch bool = false
-	identity_exists := make(map[string]string)
-	for _, identity := range state.Identities {
-		// Build map of identities from Terraform state.
-		identity_exists[identity.Type.ValueString()] = identity.Value.ValueString()
-	}
-	for _, identityItem := range client_workload.Identities {
-		// Compare retrieved identities with Terraform state.
-		val, ok := identity_exists[identityItem.Type]
-		if !ok || val != identityItem.Value {
-			// Mismatch found.
-			mismatch = true
+	// Only perform this check if we haven't already found a difference.
+	if mismatch == false {
+		identity_exists := make(map[string]string)
+		for _, identity := range state.Identities {
+			// Build map of identities from Terraform state.
+			identity_exists[identity.Type.ValueString()] = identity.Value.ValueString()
+		}
+		for _, identityItem := range client_workload.Identities {
+			// Compare retrieved identities with Terraform state.
+			val, ok := identity_exists[identityItem.Type]
+			if !ok || val != identityItem.Value {
+				// Mismatch found.
+				tflog.Debug(ctx, "Client Workload identity list differs from Terraform state.")
+				mismatch = true
+				break
+			}
 		}
 	}
 	if mismatch == true {
 		// Backend doesn't match Terraform state--replace Terraform state.
-		tflog.Debug(ctx, "Client Workload identity list differs from Terraform state.")
+		var newIdentities []identitiesModel
 		for _, identityItem := range client_workload.Identities {
-			state.Identities = append(state.Identities, identitiesModel{
+			newIdentities = append(newIdentities, identitiesModel{
 				Type:  types.StringValue(identityItem.Type),
 				Value: types.StringValue(identityItem.Value),
 			})
 		}
+		state.Identities = newIdentities
 	}
 
 	// Set refreshed state
