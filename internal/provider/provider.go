@@ -31,8 +31,9 @@ func New(version string) func() provider.Provider {
 
 // aembitProviderModel maps provider schema data to a Go type.
 type aembitProviderModel struct {
-	Host  types.String `tfsdk:"host"`
-	Token types.String `tfsdk:"token"`
+	Tenant      types.String `tfsdk:"tenant"`
+	Token       types.String `tfsdk:"token"`
+	StackDomain types.String `tfsdk:"stack_domain"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -53,12 +54,15 @@ func (p *aembitProvider) Metadata(_ context.Context, _ provider.MetadataRequest,
 func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"host": schema.StringAttribute{
+			"tenant": schema.StringAttribute{
 				Optional: true,
 			},
 			"token": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
+			},
+			"stack_domain": schema.StringAttribute{
+				Optional: true,
 			},
 		},
 	}
@@ -77,13 +81,12 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// If practitioner provided a configuration value for any of the
 	// attributes, it must be a known value.
-
-	if config.Host.IsUnknown() {
+	if config.Tenant.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Unknown Aembit API Host Base URL",
-			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API host Base URL. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the AEMBIT_HOST environment variable.",
+			path.Root("tenant"),
+			"Unknown Aembit API Tenant",
+			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API Tenant. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the AEMBIT_TENANT_ID environment variable.",
 		)
 	}
 
@@ -91,8 +94,17 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		resp.Diagnostics.AddAttributeError(
 			path.Root("token"),
 			"Unknown Aembit API Access Token",
-			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API access token. "+
+			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API Access Token. "+
 				"Either target apply the source of the value first, set the value statically in the configuration, or use the AEMBIT_TOKEN environment variable.",
+		)
+	}
+
+	if config.StackDomain.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("stack_domain"),
+			"Unknown Aembit API Stack Domain",
+			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API Stack Domain. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the AEMBIT_STACK_DOMAIN environment variable.",
 		)
 	}
 
@@ -103,26 +115,31 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// Default values to environment variables, but override
 	// with Terraform configuration value if set.
 
-	host := os.Getenv("AEMBIT_HOST")
+	tenant := os.Getenv("AEMBIT_TENANT_ID")
 	token := os.Getenv("AEMBIT_TOKEN")
+	stack := os.Getenv("AEMBIT_STACK_DOMAIN")
 
-	if !config.Host.IsNull() {
-		host = config.Host.ValueString()
+	if !config.Tenant.IsNull() {
+		tenant = config.Tenant.ValueString()
 	}
 
 	if !config.Token.IsNull() {
 		token = config.Token.ValueString()
 	}
 
+	if !config.StackDomain.IsNull() {
+		token = config.Token.ValueString()
+	}
+
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.
 
-	if host == "" {
+	if tenant == "" {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Missing Aembit API Host Base URL",
-			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API host base URL. "+
-				"Set the host value in the configuration or use the AEMBIT_HOST environment variable. "+
+			path.Root("tenant"),
+			"Missing Aembit API Tenant",
+			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API Tenant. "+
+				"Set the host value in the configuration or use the AEMBIT_TENANT_ID environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
@@ -130,9 +147,19 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	if token == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("token"),
-			"Missing Aembit API access token",
-			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API access token. "+
+			"Missing Aembit API Access Token",
+			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API Access Token. "+
 				"Set the password value in the configuration or use the AEMBIT_TOKEN environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if stack == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("stack_domain"),
+			"Missing Aembit API Stack Domain",
+			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API Stack Domain. "+
+				"Set the password value in the configuration or use the AEMBIT_STACK_DOMAIN environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
@@ -141,14 +168,14 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "aembit_host", host)
+	ctx = tflog.SetField(ctx, "aembit_tenant", tenant)
 	ctx = tflog.SetField(ctx, "aembit_token", token)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "aembit_token")
 
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
-	client, err := aembit.NewClient(&host, &token)
+	client, err := aembit.NewClient(aembit.AembitUrlBuilder{Tenant: tenant, StackDomain: stack}, &token)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Aembit API Client",
@@ -170,6 +197,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServerWorkloadResource,
+		NewCredentialProviderResource,
+		NewTrustProviderResource,
 		NewClientWorkloadResource,
 	}
 }
@@ -177,5 +206,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewServerWorkloadsDataSource,
+		NewCredentialProvidersDataSource,
+		NewTrustProvidersDataSource,
 	}
 }

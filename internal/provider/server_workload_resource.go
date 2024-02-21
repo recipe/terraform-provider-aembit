@@ -25,7 +25,7 @@ func NewServerWorkloadResource() resource.Resource {
 
 // serverWorkloadResource is the resource implementation.
 type serverWorkloadResource struct {
-	client *aembit.Client
+	client *aembit.AembitClient
 }
 
 // Metadata returns the resource type name.
@@ -39,12 +39,12 @@ func (r *serverWorkloadResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.Client)
+	client, ok := req.ProviderData.(*aembit.AembitClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aembit.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *aembit.AembitClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
