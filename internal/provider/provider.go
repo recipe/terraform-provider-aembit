@@ -200,7 +200,9 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewCredentialProviderResource,
 		NewTrustProviderResource,
 		NewClientWorkloadResource,
-		NewAccessPolicyResource,
+		NewIntegrationResource,
+		NewAccessConditionResource,
+    NewAccessPolicyResource,
 	}
 }
 
