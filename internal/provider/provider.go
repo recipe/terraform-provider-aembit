@@ -202,7 +202,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewClientWorkloadResource,
 		NewIntegrationResource,
 		NewAccessConditionResource,
-    NewAccessPolicyResource,
+		NewAccessPolicyResource,
 	}
 }
 
@@ -211,6 +211,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewServerWorkloadsDataSource,
 		NewCredentialProvidersDataSource,
 		NewTrustProvidersDataSource,
+		NewClientWorkloadsDataSource,
 		NewAccessPoliciesDataSource,
 	}
 }
