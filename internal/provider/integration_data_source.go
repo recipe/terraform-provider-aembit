@@ -23,7 +23,7 @@ func NewIntegrationsDataSource() datasource.DataSource {
 
 // integrationsDataSource is the data source implementation.
 type integrationsDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *integrationsDataSource) Configure(_ context.Context, req datasource.Con
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *integrationsDataSource) Metadata(_ context.Context, req datasource.Meta
 }
 
 // Schema defines the schema for the resource.
-func (r *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an integration.",
 		Attributes: map[string]schema.Attribute{
@@ -100,7 +100,7 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 	// Map response body to model
 	for _, integration := range integrations {
 		integrationState := integrationResourceModel{
-			ID:          types.StringValue(integration.EntityDTO.ExternalId),
+			ID:          types.StringValue(integration.EntityDTO.ExternalID),
 			Name:        types.StringValue(integration.EntityDTO.Name),
 			Description: types.StringValue(integration.EntityDTO.Description),
 			IsActive:    types.BoolValue(integration.EntityDTO.IsActive),

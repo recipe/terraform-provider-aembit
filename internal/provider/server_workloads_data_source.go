@@ -23,7 +23,7 @@ func NewServerWorkloadsDataSource() datasource.DataSource {
 
 // serverWorkloadsDataSource is the data source implementation.
 type serverWorkloadsDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *serverWorkloadsDataSource) Configure(_ context.Context, req datasource.
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *serverWorkloadsDataSource) Metadata(_ context.Context, req datasource.M
 }
 
 // Schema defines the schema for the resource.
-func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an server workload.",
 		Attributes: map[string]schema.Attribute{
@@ -170,7 +170,7 @@ func (r *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state serverWorkloadsDataSourceModel
 
-	server_workloads, err := d.client.GetServerWorkloads(nil)
+	serverWorkloads, err := d.client.GetServerWorkloads(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Server Workloads",
@@ -180,26 +180,26 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	// Map response body to model
-	for _, server_workload := range server_workloads {
+	for _, serverWorkload := range serverWorkloads {
 		serverWorkloadState := serverWorkloadResourceModel{
-			ID:          types.StringValue(server_workload.EntityDTO.ExternalId),
-			Name:        types.StringValue(server_workload.EntityDTO.Name),
-			Description: types.StringValue(server_workload.EntityDTO.Description),
-			IsActive:    types.BoolValue(server_workload.EntityDTO.IsActive),
-			Type:        types.StringValue(server_workload.Type),
+			ID:          types.StringValue(serverWorkload.EntityDTO.ExternalID),
+			Name:        types.StringValue(serverWorkload.EntityDTO.Name),
+			Description: types.StringValue(serverWorkload.EntityDTO.Description),
+			IsActive:    types.BoolValue(serverWorkload.EntityDTO.IsActive),
+			Type:        types.StringValue(serverWorkload.Type),
 		}
 
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
-			ExternalId:        types.StringValue(server_workload.ServiceEndpoint.ExternalId),
-			Id:                types.Int64Value(int64(server_workload.ServiceEndpoint.Id)),
-			Host:              types.StringValue(server_workload.ServiceEndpoint.Host),
-			AppProtocol:       types.StringValue(server_workload.ServiceEndpoint.AppProtocol),
-			TransportProtocol: types.StringValue(server_workload.ServiceEndpoint.TransportProtocol),
-			RequestedPort:     types.Int64Value(int64(server_workload.ServiceEndpoint.RequestedPort)),
-			RequestedTls:      types.BoolValue(server_workload.ServiceEndpoint.RequestedTls),
-			Port:              types.Int64Value(int64(server_workload.ServiceEndpoint.Port)),
-			Tls:               types.BoolValue(server_workload.ServiceEndpoint.Tls),
-			TlsVerification:   types.StringValue(server_workload.ServiceEndpoint.TlsVerification),
+			ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
+			ID:                types.Int64Value(int64(serverWorkload.ServiceEndpoint.ID)),
+			Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
+			AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
+			TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
+			RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
+			RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
+			Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
+			TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
+			TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
 		}
 
 		/*

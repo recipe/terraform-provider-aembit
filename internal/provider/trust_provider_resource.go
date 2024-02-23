@@ -27,7 +27,7 @@ func NewTrustProviderResource() resource.Resource {
 
 // trustProviderResource is the resource implementation.
 type trustProviderResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -41,7 +41,7 @@ func (r *trustProviderResource) Configure(_ context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -134,7 +134,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified
+// Configure validators to ensure that only one trust provider type is specified.
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -156,10 +156,10 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, nil)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, nil)
 
 	// Create new Trust Provider
-	trust_provider, err := r.client.CreateTrustProvider(trust, nil)
+	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating trust provider",
@@ -169,7 +169,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(ctx, *trust_provider)
+	plan = convertTrustProviderDTOToModel(*trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -190,7 +190,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	// Get refreshed trust value from Aembit
-	trust_provider, err := r.client.GetTrustProvider(state.ID.ValueString(), nil)
+	trustProvider, err := r.client.GetTrustProvider(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Trust Provider",
@@ -199,7 +199,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(ctx, trust_provider)
+	state = convertTrustProviderDTOToModel(trustProvider)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -220,7 +220,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Extract external ID from state
-	external_id := state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan trustProviderResourceModel
@@ -231,10 +231,10 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, &external_id)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, &externalID)
 
 	// Update Trust Provider
-	trust_provider, err := r.client.UpdateTrustProvider(trust, nil)
+	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating trust provider",
@@ -244,7 +244,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(ctx, *trust_provider)
+	state = convertTrustProviderDTOToModel(*trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -284,38 +284,38 @@ func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *trustProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderResourceModel, external_id *string) aembit.TrustProviderDTO {
+func convertTrustProviderModelToDTO(model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if external_id != nil {
-		trust.EntityDTO.ExternalId = *external_id
+	if externalID != nil {
+		trust.EntityDTO.ExternalID = *externalID
 	}
 
 	// Handle the Azure Metadata use case
 	if model.AzureMetadata != nil {
-		convertAzureMetadataModelToDTO(ctx, model, &trust)
+		convertAzureMetadataModelToDTO(model, &trust)
 	}
 	if model.AwsMetadata != nil {
-		convertAwsMetadataModelToDTO(ctx, model, &trust)
+		convertAwsMetadataModelToDTO(model, &trust)
 	}
 	if model.Kerberos != nil {
-		convertKerberosModelToDTO(ctx, model, &trust)
+		convertKerberosModelToDTO(model, &trust)
 	}
 
 	return trust
 }
 
-func convertAzureMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
@@ -324,27 +324,27 @@ func convertAzureMetadataModelToDTO(ctx context.Context, model trustProviderReso
 			Attribute: "AzureSku", Value: model.AzureMetadata.Sku.ValueString(),
 		})
 	}
-	if len(model.AzureMetadata.VmId.ValueString()) > 0 {
+	if len(model.AzureMetadata.VMID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureVmId", Value: model.AzureMetadata.VmId.ValueString(),
+			Attribute: "AzureVmId", Value: model.AzureMetadata.VMID.ValueString(),
 		})
 	}
-	if len(model.AzureMetadata.SubscriptionId.ValueString()) > 0 {
+	if len(model.AzureMetadata.SubscriptionID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureSubscriptionId", Value: model.AzureMetadata.SubscriptionId.ValueString(),
+			Attribute: "AzureSubscriptionId", Value: model.AzureMetadata.SubscriptionID.ValueString(),
 		})
 	}
 }
 
-func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AWSMetadataService"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.AwsMetadata.Certificate.ValueString()))
 	dto.PemType = "Certificate"
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
-	if len(model.AwsMetadata.AccountId.ValueString()) > 0 {
+	if len(model.AwsMetadata.AccountID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsAccountId", Value: model.AwsMetadata.AccountId.ValueString(),
+			Attribute: "AwsAccountId", Value: model.AwsMetadata.AccountID.ValueString(),
 		})
 	}
 	if len(model.AwsMetadata.Architecture.ValueString()) > 0 {
@@ -362,14 +362,14 @@ func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResour
 			Attribute: "AwsBillingProducts", Value: model.AwsMetadata.BillingProducts.ValueString(),
 		})
 	}
-	if len(model.AwsMetadata.ImageId.ValueString()) > 0 {
+	if len(model.AwsMetadata.ImageID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsImageId", Value: model.AwsMetadata.ImageId.ValueString(),
+			Attribute: "AwsImageId", Value: model.AwsMetadata.ImageID.ValueString(),
 		})
 	}
-	if len(model.AwsMetadata.InstanceId.ValueString()) > 0 {
+	if len(model.AwsMetadata.InstanceID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsInstanceId", Value: model.AwsMetadata.InstanceId.ValueString(),
+			Attribute: "AwsInstanceId", Value: model.AwsMetadata.InstanceID.ValueString(),
 		})
 	}
 	if len(model.AwsMetadata.InstanceType.ValueString()) > 0 {
@@ -377,9 +377,9 @@ func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResour
 			Attribute: "AwsInstanceType", Value: model.AwsMetadata.InstanceType.ValueString(),
 		})
 	}
-	if len(model.AwsMetadata.KernelId.ValueString()) > 0 {
+	if len(model.AwsMetadata.KernelID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsKernelId", Value: model.AwsMetadata.KernelId.ValueString(),
+			Attribute: "AwsKernelId", Value: model.AwsMetadata.KernelID.ValueString(),
 		})
 	}
 	if len(model.AwsMetadata.MarketplaceProductCodes.ValueString()) > 0 {
@@ -397,9 +397,9 @@ func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResour
 			Attribute: "AwsPrivateIp", Value: model.AwsMetadata.PrivateIP.ValueString(),
 		})
 	}
-	if len(model.AwsMetadata.RamdiskId.ValueString()) > 0 {
+	if len(model.AwsMetadata.RamdiskID.ValueString()) > 0 {
 		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsRamdiskId", Value: model.AwsMetadata.RamdiskId.ValueString(),
+			Attribute: "AwsRamdiskId", Value: model.AwsMetadata.RamdiskID.ValueString(),
 		})
 	}
 	if len(model.AwsMetadata.Region.ValueString()) > 0 {
@@ -414,9 +414,9 @@ func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResour
 	}
 }
 
-func convertKerberosModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "Kerberos"
-	dto.AgentControllerId = model.Kerberos.AgentControllerId.ValueString()
+	dto.AgentControllerID = model.Kerberos.AgentControllerID.ValueString()
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
 	if len(model.Kerberos.Principal.ValueString()) > 0 {
@@ -436,30 +436,30 @@ func convertKerberosModelToDTO(ctx context.Context, model trustProviderResourceM
 	}
 }
 
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(dto aembit.TrustProviderDTO) trustProviderResourceModel {
 	var model trustProviderResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 
 	switch dto.Provider {
 	case "AzureMetadataService": // Azure Metadata
-		model.AzureMetadata = convertAzureMetadataDTOToModel(ctx, dto)
+		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
 	case "AWSMetadataService": // AWS Metadata
-		model.AwsMetadata = convertAwsMetadataDTOToModel(ctx, dto)
+		model.AwsMetadata = convertAwsMetadataDTOToModel(dto)
 	case "Kerberos": // Kerberos
-		model.Kerberos = convertKerberosDTOToModel(ctx, dto)
+		model.Kerberos = convertKerberosDTOToModel(dto)
 	}
 
 	return model
 }
 
-func convertAzureMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
+func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
 	model := &trustProviderAzureMetadataModel{
 		Sku:            types.StringNull(),
-		VmId:           types.StringNull(),
-		SubscriptionId: types.StringNull(),
+		VMID:           types.StringNull(),
+		SubscriptionID: types.StringNull(),
 	}
 
 	for _, rule := range dto.MatchRules {
@@ -467,31 +467,31 @@ func convertAzureMetadataDTOToModel(ctx context.Context, dto aembit.TrustProvide
 		case "AzureSku":
 			model.Sku = types.StringValue(rule.Value)
 		case "AzureVmId":
-			model.VmId = types.StringValue(rule.Value)
+			model.VMID = types.StringValue(rule.Value)
 		case "AzureSubscriptionId":
-			model.SubscriptionId = types.StringValue(rule.Value)
+			model.SubscriptionID = types.StringValue(rule.Value)
 		}
 	}
 	return model
 }
 
-func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
+func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
 	decodedCert, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &trustProviderAwsMetadataModel{
 		Certificate:             types.StringValue(string(decodedCert)),
-		AccountId:               types.StringNull(),
+		AccountID:               types.StringNull(),
 		Architecture:            types.StringNull(),
 		AvailabilityZone:        types.StringNull(),
 		BillingProducts:         types.StringNull(),
-		ImageId:                 types.StringNull(),
-		InstanceId:              types.StringNull(),
+		ImageID:                 types.StringNull(),
+		InstanceID:              types.StringNull(),
 		InstanceType:            types.StringNull(),
-		KernelId:                types.StringNull(),
+		KernelID:                types.StringNull(),
 		MarketplaceProductCodes: types.StringNull(),
 		PendingTime:             types.StringNull(),
 		PrivateIP:               types.StringNull(),
-		RamdiskId:               types.StringNull(),
+		RamdiskID:               types.StringNull(),
 		Region:                  types.StringNull(),
 		Version:                 types.StringNull(),
 	}
@@ -499,7 +499,7 @@ func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderD
 	for _, rule := range dto.MatchRules {
 		switch rule.Attribute {
 		case "AwsAccountId":
-			model.AccountId = types.StringValue(rule.Value)
+			model.AccountID = types.StringValue(rule.Value)
 		case "AwsArchitecture":
 			model.Architecture = types.StringValue(rule.Value)
 		case "AwsAvailabilityZone":
@@ -507,13 +507,13 @@ func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderD
 		case "AwsBillingProducts":
 			model.BillingProducts = types.StringValue(rule.Value)
 		case "AwsImageId":
-			model.ImageId = types.StringValue(rule.Value)
+			model.ImageID = types.StringValue(rule.Value)
 		case "AwsInstanceId":
-			model.InstanceId = types.StringValue(rule.Value)
+			model.InstanceID = types.StringValue(rule.Value)
 		case "AwsInstanceType":
 			model.InstanceType = types.StringValue(rule.Value)
 		case "AwsKernelId":
-			model.KernelId = types.StringValue(rule.Value)
+			model.KernelID = types.StringValue(rule.Value)
 		case "AwsMarketplaceProductCodes":
 			model.MarketplaceProductCodes = types.StringValue(rule.Value)
 		case "AwsPendingTime":
@@ -521,7 +521,7 @@ func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderD
 		case "AwsPrivateIp":
 			model.PrivateIP = types.StringValue(rule.Value)
 		case "AwsRamdiskId":
-			model.RamdiskId = types.StringValue(rule.Value)
+			model.RamdiskID = types.StringValue(rule.Value)
 		case "AwsRegion":
 			model.Region = types.StringValue(rule.Value)
 		case "AwsVersion":
@@ -531,9 +531,9 @@ func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderD
 	return model
 }
 
-func convertKerberosDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
+func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
 	model := &trustProviderKerberosModel{
-		AgentControllerId: types.StringValue(dto.AgentControllerId),
+		AgentControllerID: types.StringValue(dto.AgentControllerID),
 		Principal:         types.StringNull(),
 		Realm:             types.StringNull(),
 		SourceIP:          types.StringNull(),

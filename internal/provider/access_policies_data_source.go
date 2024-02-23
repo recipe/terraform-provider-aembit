@@ -23,7 +23,7 @@ func NewAccessPoliciesDataSource() datasource.DataSource {
 
 // accessPoliciesDataSource is the data source implementation.
 type accessPoliciesDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *accessPoliciesDataSource) Configure(_ context.Context, req datasource.C
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *accessPoliciesDataSource) Metadata(_ context.Context, req datasource.Me
 }
 
 // Schema defines the schema for the resource.
-func (r *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages access policies.",
 		Attributes: map[string]schema.Attribute{
@@ -96,7 +96,7 @@ func (r *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state accessPoliciesDataSourceModel
 
-	access_policies, err := d.client.GetAccessPolicies(nil)
+	accessPolicies, err := d.client.GetAccessPolicies(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Trust Providers",
@@ -106,14 +106,14 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	// Map response body to model
-	for _, access_policy := range access_policies {
+	for _, accessPolicy := range accessPolicies {
 		accessPolicyState := accessPolicyResourceModel{
-			ID:             types.StringValue(access_policy.EntityDTO.ExternalId),
-			Name:           types.StringValue(access_policy.EntityDTO.Name),
-			Description:    types.StringValue(access_policy.EntityDTO.Description),
-			IsActive:       types.BoolValue(access_policy.EntityDTO.IsActive),
-			ClientWorkload: types.StringValue(access_policy.ClientWorkload.ExternalId),
-			ServerWorkload: types.StringValue(access_policy.ServerWorkload.ExternalId),
+			ID:             types.StringValue(accessPolicy.EntityDTO.ExternalID),
+			Name:           types.StringValue(accessPolicy.EntityDTO.Name),
+			Description:    types.StringValue(accessPolicy.EntityDTO.Description),
+			IsActive:       types.BoolValue(accessPolicy.EntityDTO.IsActive),
+			ClientWorkload: types.StringValue(accessPolicy.ClientWorkload.ExternalID),
+			ServerWorkload: types.StringValue(accessPolicy.ServerWorkload.ExternalID),
 		}
 		state.AccessPolicies = append(state.AccessPolicies, accessPolicyState)
 	}

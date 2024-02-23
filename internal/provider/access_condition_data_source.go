@@ -23,7 +23,7 @@ func NewAccessConditionsDataSource() datasource.DataSource {
 
 // accessConditionsDataSource is the data source implementation.
 type accessConditionsDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *accessConditionsDataSource) Configure(_ context.Context, req datasource
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *accessConditionsDataSource) Metadata(_ context.Context, req datasource.
 }
 
 // Schema defines the schema for the resource.
-func (r *accessConditionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an accessCondition.",
 		Attributes: map[string]schema.Attribute{
@@ -100,7 +100,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
 		accessConditionState := accessConditionResourceModel{
-			ID:          types.StringValue(accessCondition.EntityDTO.ExternalId),
+			ID:          types.StringValue(accessCondition.EntityDTO.ExternalID),
 			Name:        types.StringValue(accessCondition.EntityDTO.Name),
 			Description: types.StringValue(accessCondition.EntityDTO.Description),
 			IsActive:    types.BoolValue(accessCondition.EntityDTO.IsActive),

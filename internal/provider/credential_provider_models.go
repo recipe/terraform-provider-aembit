@@ -11,7 +11,7 @@ type credentialProviderResourceModel struct {
 	Name                   types.String                                   `tfsdk:"name"`
 	Description            types.String                                   `tfsdk:"description"`
 	IsActive               types.Bool                                     `tfsdk:"is_active"`
-	ApiKey                 *credentialProviderApiKeyModel                 `tfsdk:"api_key"`
+	APIKey                 *credentialProviderAPIKeyModel                 `tfsdk:"api_key"`
 	OAuthClientCredentials *credentialProviderOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
 	VaultClientToken       *credentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`
 }
@@ -21,14 +21,14 @@ type credentialProvidersDataSourceModel struct {
 	CredentialProviders []credentialProviderResourceModel `tfsdk:"credential_providers"`
 }
 
-type credentialProviderApiKeyModel struct {
-	ApiKey types.String `tfsdk:"api_key"`
+type credentialProviderAPIKeyModel struct {
+	APIKey types.String `tfsdk:"api_key"`
 }
 
 // credentialProviderOAuthClientCredentialsModel maps OAuth Client Credentials Flow configuration.
 type credentialProviderOAuthClientCredentialsModel struct {
-	TokenUrl     types.String `tfsdk:"token_url"`
-	ClientId     types.String `tfsdk:"client_id"`
+	TokenURL     types.String `tfsdk:"token_url"`
+	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`
 	Scopes       types.String `tfsdk:"scopes"`
 }
@@ -40,7 +40,7 @@ type credentialProviderVaultClientTokenModel struct {
 	CustomClaims    []*credentialProviderVaultClientTokenCustomClaimsModel `tfsdk:"custom_claims"`
 	Lifetime        int32                                                  `tfsdk:"lifetime"`
 	VaultHost       string                                                 `tfsdk:"vault_host"`
-	VaultTls        bool                                                   `tfsdk:"vault_tls"`
+	VaultTLS        bool                                                   `tfsdk:"vault_tls"`
 	VaultPort       int32                                                  `tfsdk:"vault_port"`
 	VaultNamespace  string                                                 `tfsdk:"vault_namespace"`
 	VaultRole       string                                                 `tfsdk:"vault_role"`

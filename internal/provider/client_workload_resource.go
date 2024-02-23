@@ -25,7 +25,7 @@ func NewClientWorkloadResource() resource.Resource {
 
 // clientWorkloadResource is the resource implementation.
 type clientWorkloadResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -39,7 +39,7 @@ func (r *clientWorkloadResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -114,7 +114,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, nil)
 
 	// Create new Client Workload
-	client_workload, err := r.client.CreateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating client workload",
@@ -124,7 +124,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertClientWorkloadDTOToModel(ctx, *client_workload)
+	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -145,7 +145,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed workload value from Aembit
-	client_workload, err := r.client.GetClientWorkload(state.ID.ValueString(), nil)
+	clientWorkload, err := r.client.GetClientWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Client Workload",
@@ -155,7 +155,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state = convertClientWorkloadDTOToModel(ctx, client_workload)
+	state = convertClientWorkloadDTOToModel(ctx, clientWorkload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -176,8 +176,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var external_id string
-	external_id = state.ID.ValueString()
+	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan clientWorkloadResourceModel
@@ -188,10 +187,10 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, &external_id)
+	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, &externalID)
 
 	// Update Client Workload
-	client_workload, err := r.client.UpdateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating client workload",
@@ -201,7 +200,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertClientWorkloadDTOToModel(ctx, *client_workload)
+	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -241,7 +240,7 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

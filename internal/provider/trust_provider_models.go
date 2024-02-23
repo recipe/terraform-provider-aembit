@@ -23,30 +23,30 @@ type trustProvidersDataSourceModel struct {
 
 type trustProviderAzureMetadataModel struct {
 	Sku            types.String `tfsdk:"sku"`
-	VmId           types.String `tfsdk:"vm_id"`
-	SubscriptionId types.String `tfsdk:"subscription_id"`
+	VMID           types.String `tfsdk:"vm_id"`
+	SubscriptionID types.String `tfsdk:"subscription_id"`
 }
 
 type trustProviderAwsMetadataModel struct {
 	Certificate             types.String `tfsdk:"certificate"`
-	AccountId               types.String `tfsdk:"account_id"`
+	AccountID               types.String `tfsdk:"account_id"`
 	Architecture            types.String `tfsdk:"architecture"`
 	AvailabilityZone        types.String `tfsdk:"availability_zone"`
 	BillingProducts         types.String `tfsdk:"billing_products"`
-	ImageId                 types.String `tfsdk:"image_id"`
-	InstanceId              types.String `tfsdk:"instance_id"`
+	ImageID                 types.String `tfsdk:"image_id"`
+	InstanceID              types.String `tfsdk:"instance_id"`
 	InstanceType            types.String `tfsdk:"instance_type"`
-	KernelId                types.String `tfsdk:"kernel_id"`
+	KernelID                types.String `tfsdk:"kernel_id"`
 	MarketplaceProductCodes types.String `tfsdk:"marketplace_product_codes"`
 	PendingTime             types.String `tfsdk:"pending_time"`
 	PrivateIP               types.String `tfsdk:"private_ip"`
-	RamdiskId               types.String `tfsdk:"ramdisk_id"`
+	RamdiskID               types.String `tfsdk:"ramdisk_id"`
 	Region                  types.String `tfsdk:"region"`
 	Version                 types.String `tfsdk:"version"`
 }
 
 type trustProviderKerberosModel struct {
-	AgentControllerId types.String `tfsdk:"agent_controller_id"`
+	AgentControllerID types.String `tfsdk:"agent_controller_id"`
 	Principal         types.String `tfsdk:"principal"`
 	Realm             types.String `tfsdk:"realm"`
 	SourceIP          types.String `tfsdk:"source_ip"`

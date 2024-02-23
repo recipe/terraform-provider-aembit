@@ -25,7 +25,7 @@ func NewAccessPolicyResource() resource.Resource {
 
 // accessPolicyResource is the resource implementation.
 type accessPolicyResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -39,7 +39,7 @@ func (r *accessPolicyResource) Configure(_ context.Context, req resource.Configu
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -99,10 +99,10 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Generate API request body from plan
-	var policy aembit.PolicyDTO = convertAccessPolicyModelToPolicyDTO(ctx, plan, nil)
+	var policy aembit.PolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
 
 	// Create new Access Policy
-	access_policy, err := r.client.CreateAccessPolicy(policy, nil)
+	accessPolicy, err := r.client.CreateAccessPolicy(policy, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating access policy",
@@ -112,7 +112,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessPolicyDTOToModel(ctx, *access_policy)
+	plan = convertAccessPolicyDTOToModel(*accessPolicy)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -133,7 +133,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	// Get refreshed policy value from Aembit
-	access_policy, err := r.client.GetAccessPolicy(state.ID.ValueString(), nil)
+	accessPolicy, err := r.client.GetAccessPolicy(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Access Policy",
@@ -142,7 +142,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	state = convertAccessPolicyExternalDTOToModel(ctx, access_policy)
+	state = convertAccessPolicyExternalDTOToModel(accessPolicy)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -163,7 +163,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Extract external ID from state
-	external_id := state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
@@ -174,10 +174,10 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Generate API request body from plan
-	var policy aembit.PolicyDTO = convertAccessPolicyModelToPolicyDTO(ctx, plan, &external_id)
+	var policy aembit.PolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
 	// Update Access Policy
-	access_policy, err := r.client.UpdateAccessPolicy(policy, nil)
+	accessPolicy, err := r.client.UpdateAccessPolicy(policy, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating access policy",
@@ -187,7 +187,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessPolicyDTOToModel(ctx, *access_policy)
+	state = convertAccessPolicyDTOToModel(*accessPolicy)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -227,13 +227,13 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessPolicyModelToPolicyDTO(ctx context.Context, model accessPolicyResourceModel, external_id *string) aembit.PolicyDTO {
+func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.PolicyDTO {
 	var policy aembit.PolicyDTO
 	policy.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -243,16 +243,16 @@ func convertAccessPolicyModelToPolicyDTO(ctx context.Context, model accessPolicy
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
 
-	if external_id != nil {
-		policy.EntityDTO.ExternalId = *external_id
+	if externalID != nil {
+		policy.EntityDTO.ExternalID = *externalID
 	}
 
 	return policy
 }
 
-func convertAccessPolicyDTOToModel(ctx context.Context, dto aembit.PolicyDTO) accessPolicyResourceModel {
+func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
@@ -262,14 +262,14 @@ func convertAccessPolicyDTOToModel(ctx context.Context, dto aembit.PolicyDTO) ac
 	return model
 }
 
-func convertAccessPolicyExternalDTOToModel(ctx context.Context, dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
+func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalId)
-	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalId)
+	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalID)
+	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalID)
 
 	return model
 }
