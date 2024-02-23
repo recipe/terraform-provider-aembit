@@ -1,0 +1,43 @@
+# Terraform Provider Testing Build workflow.
+name: Build for QA
+
+# This GitHub action creates a release when a tag that matches the pattern
+# "v*" (e.g. v0.1.0) is created.
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+# Releases need permissions to read and write the repository contents.
+# GitHub considers creating releases and uploading assets as writing contents.
+permissions:
+  contents: write
+
+# Ensure only one workflow run at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  goreleaser-qa:
+    name: GoReleaser Build for QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+        with:
+          args: build --snapshot --clean 
+      - name: Archive QA Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-aembit
+          path: dist
+          retention-days: 14

@@ -30,8 +30,6 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
-    name = "policy1"
-    description = "new policy for test"
     is_active = false
     client_workload = aembit_client_workload.first_client.id
     server_workload = aembit_server_workload.first_server.id

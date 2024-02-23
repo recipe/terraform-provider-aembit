@@ -62,15 +62,6 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Description: "Alphanumeric identifier of the access policy.",
 				Computed:    true,
 			},
-			"name": schema.StringAttribute{
-				Description: "User-provided name of the access policy.",
-				Required:    true,
-			},
-			"description": schema.StringAttribute{
-				Description: "User-provided description of the access policy.",
-				Optional:    true,
-				Computed:    true,
-			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active/Inactive status of the access policy.",
 				Optional:    true,
@@ -236,9 +227,8 @@ func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.PolicyDTO {
 	var policy aembit.PolicyDTO
 	policy.EntityDTO = aembit.EntityDTO{
-		Name:        model.Name.ValueString(),
-		Description: model.Description.ValueString(),
-		IsActive:    model.IsActive.ValueBool(),
+		Name:     "Placeholder",
+		IsActive: model.IsActive.ValueBool(),
 	}
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
@@ -253,8 +243,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload)
@@ -265,8 +253,6 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalID)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalID)

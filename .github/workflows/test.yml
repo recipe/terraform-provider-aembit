@@ -11,13 +11,17 @@ on:
   pull_request:
     paths-ignore:
       - 'README.md'
-  push:
-    paths-ignore:
-      - 'README.md'
+    branches:
+      - 'main'
 
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
+
+# Ensure only one workflow run at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Ensure project builds before running testing matrix
@@ -58,6 +62,12 @@ jobs:
         run: |
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+      - name: Archive QA Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-aembit-docs
+          path: docs
+          retention-days: 14
 
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:

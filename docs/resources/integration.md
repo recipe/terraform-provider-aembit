@@ -21,7 +21,7 @@ description: |-
 - `name` (String) User-provided name of the integration.
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials authentication information for the integration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
 - `sync_frequency` (Number) Frequency to be used for synchronizing the integration.
-- `type` (String) Type of Aembit integration (either WizIntegrationApi or CrowdStrike).
+- `type` (String) Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).
 
 ### Optional
 
