@@ -1,30 +1,22 @@
 package provider
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccClientWorkloadResource(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/client/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/client/TestAccClientWorkloadResource.tfmod")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_client_workload" "test" {
-	name = "Unit Test 1"
-	is_active = true
-	description = "Acceptance Test client workload"
-	identities = [
-		{
-			type = "k8sNamespace"
-			value = "unittest1namespace"
-		}
-	]
-}
-`,
+				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1"),
@@ -47,19 +39,7 @@ resource "aembit_client_workload" "test" {
 			},
 			// Update and Read testing
 			{
-				Config: providerConfig + `
-				resource "aembit_client_workload" "test" {
-					name = "Unit Test 1 - modified"
-					is_active = false
-					description = "Acceptance Test client workload"
-					identities = [
-						{
-							type = "k8sNamespace"
-							value = "unittest1namespace"
-						}
-					]
-				}
-`,
+				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
