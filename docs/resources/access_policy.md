@@ -18,12 +18,10 @@ description: |-
 ### Required
 
 - `client_workload` (String) Client workload ID configured in the access policy.
-- `name` (String) User-provided name of the access policy.
 - `server_workload` (String) Server workload ID configured in the access policy.
 
 ### Optional
 
-- `description` (String) User-provided description of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
 
 ### Read-Only

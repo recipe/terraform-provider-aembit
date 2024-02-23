@@ -18,8 +18,6 @@ func TestAccAccessPolicyResource(t *testing.T) {
 			{
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "name", "policy1"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
 					// Verify placeholder ID is set
@@ -37,7 +35,7 @@ func TestAccAccessPolicyResource(t *testing.T) {
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "description", "new policy for test - modified"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

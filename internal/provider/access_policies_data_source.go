@@ -65,14 +65,6 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Alphanumeric identifier of the access policy.",
 							Computed:    true,
 						},
-						"name": schema.StringAttribute{
-							Description: "User-provided name of the access policy.",
-							Computed:    true,
-						},
-						"description": schema.StringAttribute{
-							Description: "User-provided description of the access policy.",
-							Computed:    true,
-						},
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the access policy.",
 							Computed:    true,
@@ -109,8 +101,6 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 	for _, accessPolicy := range accessPolicies {
 		accessPolicyState := accessPolicyResourceModel{
 			ID:             types.StringValue(accessPolicy.EntityDTO.ExternalID),
-			Name:           types.StringValue(accessPolicy.EntityDTO.Name),
-			Description:    types.StringValue(accessPolicy.EntityDTO.Description),
 			IsActive:       types.BoolValue(accessPolicy.EntityDTO.IsActive),
 			ClientWorkload: types.StringValue(accessPolicy.ClientWorkload.ExternalID),
 			ServerWorkload: types.StringValue(accessPolicy.ServerWorkload.ExternalID),

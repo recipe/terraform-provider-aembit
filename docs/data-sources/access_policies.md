@@ -25,8 +25,6 @@ Manages access policies.
 Read-Only:
 
 - `client_workload` (String) Configured client workload of the access policy.
-- `description` (String) User-provided description of the access policy.
 - `id` (String) Alphanumeric identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
-- `name` (String) User-provided name of the access policy.
 - `server_workload` (String) Configured server workload of the access policy.
