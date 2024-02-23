@@ -24,6 +24,6 @@ type accessPoliciesDataSourceModel struct {
 }
 
 // policyNoteModel maps the datasource schema.
-type policyNoteModel struct {
-	Note types.String `tfsdk:"note"`
-}
+//type policyNoteModel struct {
+//	Note types.String `tfsdk:"note"`
+//}

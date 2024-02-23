@@ -14,9 +14,9 @@ type clientWorkloadResourceModel struct {
 }
 
 // clientWorkloadDataSourceModel maps the datasource schema.
-type clientWorkloadsDataSourceModel struct {
-	ClientWorkloads []clientWorkloadResourceModel `tfsdk:"client_workloads"`
-}
+//type clientWorkloadsDataSourceModel struct {
+//	ClientWorkloads []clientWorkloadResourceModel `tfsdk:"client_workloads"`
+//}
 
 // identitiesModel maps client workload identity data.
 type identitiesModel struct {

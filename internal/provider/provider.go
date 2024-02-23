@@ -114,10 +114,9 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Default values to environment variables, but override
 	// with Terraform configuration value if set.
-
 	tenant := os.Getenv("AEMBIT_TENANT_ID")
 	token := os.Getenv("AEMBIT_TOKEN")
-	stack := os.Getenv("AEMBIT_STACK_DOMAIN")
+	stackDomain := os.Getenv("AEMBIT_STACK_DOMAIN")
 
 	if !config.Tenant.IsNull() {
 		tenant = config.Tenant.ValueString()
@@ -128,7 +127,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	if !config.StackDomain.IsNull() {
-		token = config.Token.ValueString()
+		stackDomain = config.StackDomain.ValueString()
 	}
 
 	// If any of the expected configurations are missing, return
@@ -154,7 +153,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
-	if stack == "" {
+	if stackDomain == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("stack_domain"),
 			"Missing Aembit API Stack Domain",
@@ -175,7 +174,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
-	client, err := aembit.NewClient(aembit.AembitUrlBuilder{Tenant: tenant, StackDomain: stack}, &token)
+	client, err := aembit.NewClient(aembit.URLBuilder{}, &token)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Aembit API Client",
@@ -185,6 +184,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 		return
 	}
+	client.Tenant = tenant
+	client.StackDomain = stackDomain
 
 	// Make the Aembit client available during DataSource and Resource
 	// type Configure methods.
@@ -202,7 +203,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewClientWorkloadResource,
 		NewIntegrationResource,
 		NewAccessConditionResource,
-    NewAccessPolicyResource,
+		NewAccessPolicyResource,
 	}
 }
 

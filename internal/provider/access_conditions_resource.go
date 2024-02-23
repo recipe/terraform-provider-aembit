@@ -26,7 +26,7 @@ func NewAccessConditionResource() resource.Resource {
 
 // accessConditionResource is the resource implementation.
 type accessConditionResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -40,7 +40,7 @@ func (r *accessConditionResource) Configure(_ context.Context, req resource.Conf
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -103,7 +103,7 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified
+// Configure validators to ensure that only one trust provider type is specified.
 func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -188,7 +188,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Extract external ID from state
-	external_id := state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan accessConditionResourceModel
@@ -199,7 +199,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &external_id)
+	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &externalID)
 
 	// Update AccessCondition
 	accessCondition, err := r.client.UpdateAccessCondition(dto, nil)
@@ -252,21 +252,21 @@ func (r *accessConditionResource) Delete(ctx context.Context, req resource.Delet
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *accessConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, external_id *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(_ context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if external_id != nil {
-		accessCondition.EntityDTO.ExternalId = *external_id
+	if externalID != nil {
+		accessCondition.EntityDTO.ExternalID = *externalID
 	}
 
 	accessCondition.IntegrationID = model.IntegrationID.ValueString()
@@ -284,15 +284,15 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, state accessConditionResourceModel) accessConditionResourceModel {
+func convertAccessConditionDTOToModel(_ context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
 	var model accessConditionResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 
 	if len(dto.IntegrationID) == 0 {
-		model.IntegrationID = types.StringValue(dto.Integration.ExternalId)
+		model.IntegrationID = types.StringValue(dto.Integration.ExternalID)
 	} else {
 		model.IntegrationID = types.StringValue(dto.IntegrationID)
 	}

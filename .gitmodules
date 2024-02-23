@@ -1,0 +1,4 @@
+[submodule "aembit_api_client"]
+	path = aembit_api_client
+	url = git@github.com:Aembit/aembit_api_client.git
+	branch = main

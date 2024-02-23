@@ -26,7 +26,7 @@ func NewClientWorkloadResource() resource.Resource {
 
 // clientWorkloadResource is the resource implementation.
 type clientWorkloadResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -40,7 +40,7 @@ func (r *clientWorkloadResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -127,7 +127,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Create new Client Workload
-	client_workload, err := r.client.CreateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating client workload",
@@ -137,13 +137,13 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(client_workload.EntityDTO.Name)
-	plan.Description = types.StringValue(client_workload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(client_workload.Type)
+	plan.ID = types.StringValue(clientWorkload.EntityDTO.ExternalID)
+	plan.Name = types.StringValue(clientWorkload.EntityDTO.Name)
+	plan.Description = types.StringValue(clientWorkload.EntityDTO.Description)
+	plan.IsActive = types.BoolValue(clientWorkload.EntityDTO.IsActive)
+	plan.Type = types.StringValue(clientWorkload.Type)
 
-	for identityIndex, identityItem := range client_workload.Identities {
+	for identityIndex, identityItem := range clientWorkload.Identities {
 		plan.Identities[identityIndex] = identitiesModel{
 			Type:  types.StringValue(identityItem.Type),
 			Value: types.StringValue(identityItem.Value),
@@ -169,7 +169,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed workload value from Aembit
-	client_workload, err := r.client.GetClientWorkload(state.ID.ValueString(), nil)
+	clientWorkload, err := r.client.GetClientWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading Aembit Client Workload",
@@ -179,15 +179,15 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	state.Name = types.StringValue(client_workload.EntityDTO.Name)
-	state.Description = types.StringValue(client_workload.EntityDTO.Description)
-	state.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	state.Type = types.StringValue(client_workload.Type)
+	state.ID = types.StringValue(clientWorkload.EntityDTO.ExternalID)
+	state.Name = types.StringValue(clientWorkload.EntityDTO.Name)
+	state.Description = types.StringValue(clientWorkload.EntityDTO.Description)
+	state.IsActive = types.BoolValue(clientWorkload.EntityDTO.IsActive)
+	state.Type = types.StringValue(clientWorkload.Type)
 
 	// Check for changes in the Identities list.
 	var mismatch bool = false
-	if len(state.Identities) != len(client_workload.Identities) {
+	if len(state.Identities) != len(clientWorkload.Identities) {
 		// The count of Identities on the backend is different from the Terraform state.
 		// Replace the state with the backend configuration.
 		tflog.Debug(ctx, "Count of Client Workload identities differs from Terraform state.")
@@ -196,15 +196,15 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 	// Compare the identity list contents between backend and Terraform state.
 	// Only perform this check if we haven't already found a difference.
-	if mismatch == false {
-		identity_exists := make(map[string]string)
+	if !mismatch {
+		identityExists := make(map[string]string)
 		for _, identity := range state.Identities {
 			// Build map of identities from Terraform state.
-			identity_exists[identity.Type.ValueString()] = identity.Value.ValueString()
+			identityExists[identity.Type.ValueString()] = identity.Value.ValueString()
 		}
-		for _, identityItem := range client_workload.Identities {
+		for _, identityItem := range clientWorkload.Identities {
 			// Compare retrieved identities with Terraform state.
-			val, ok := identity_exists[identityItem.Type]
+			val, ok := identityExists[identityItem.Type]
 			if !ok || val != identityItem.Value {
 				// Mismatch found.
 				tflog.Debug(ctx, "Client Workload identity list differs from Terraform state.")
@@ -213,10 +213,10 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 			}
 		}
 	}
-	if mismatch == true {
+	if mismatch {
 		// Backend doesn't match Terraform state--replace Terraform state.
 		var newIdentities []identitiesModel
-		for _, identityItem := range client_workload.Identities {
+		for _, identityItem := range clientWorkload.Identities {
 			newIdentities = append(newIdentities, identitiesModel{
 				Type:  types.StringValue(identityItem.Type),
 				Value: types.StringValue(identityItem.Value),
@@ -244,8 +244,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var external_id string
-	external_id = state.ID.ValueString()
+	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan clientWorkloadResourceModel
@@ -258,7 +257,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	// Generate API request body from plan
 	var workload aembit.ClientWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
-		ExternalId:  external_id,
+		ExternalID:  externalID,
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
@@ -272,7 +271,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Update Client Workload
-	client_workload, err := r.client.UpdateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating client workload",
@@ -282,13 +281,13 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(client_workload.EntityDTO.Name)
-	plan.Description = types.StringValue(client_workload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(client_workload.Type)
+	plan.ID = types.StringValue(clientWorkload.EntityDTO.ExternalID)
+	plan.Name = types.StringValue(clientWorkload.EntityDTO.Name)
+	plan.Description = types.StringValue(clientWorkload.EntityDTO.Description)
+	plan.IsActive = types.BoolValue(clientWorkload.EntityDTO.IsActive)
+	plan.Type = types.StringValue(clientWorkload.Type)
 
-	for identityIndex, identityItem := range client_workload.Identities {
+	for identityIndex, identityItem := range clientWorkload.Identities {
 		plan.Identities[identityIndex] = identitiesModel{
 			Type:  types.StringValue(identityItem.Type),
 			Value: types.StringValue(identityItem.Value),
@@ -333,7 +332,7 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

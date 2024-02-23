@@ -23,7 +23,7 @@ func NewCredentialProvidersDataSource() datasource.DataSource {
 
 // credentialProvidersDataSource is the data source implementation.
 type credentialProvidersDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *credentialProvidersDataSource) Configure(_ context.Context, req datasou
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *credentialProvidersDataSource) Metadata(_ context.Context, req datasour
 }
 
 // Schema defines the schema for the resource.
-func (r *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an credential provider.",
 		Attributes: map[string]schema.Attribute{
@@ -88,7 +88,7 @@ func (r *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state credentialProvidersDataSourceModel
 
-	credential_providers, err := d.client.GetCredentialProviders(nil)
+	credentialProviders, err := d.client.GetCredentialProviders(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Providers",
@@ -98,12 +98,12 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 	}
 
 	// Map response body to model
-	for _, credential_provider := range credential_providers {
+	for _, credentialProvider := range credentialProviders {
 		credentialProviderState := credentialProviderResourceModel{
-			ID:          types.StringValue(credential_provider.EntityDTO.ExternalId),
-			Name:        types.StringValue(credential_provider.EntityDTO.Name),
-			Description: types.StringValue(credential_provider.EntityDTO.Description),
-			IsActive:    types.BoolValue(credential_provider.EntityDTO.IsActive),
+			ID:          types.StringValue(credentialProvider.EntityDTO.ExternalID),
+			Name:        types.StringValue(credentialProvider.EntityDTO.Name),
+			Description: types.StringValue(credentialProvider.EntityDTO.Description),
+			IsActive:    types.BoolValue(credentialProvider.EntityDTO.IsActive),
 		}
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}

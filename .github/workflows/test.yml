@@ -1,5 +1,9 @@
 # Terraform Provider testing workflow.
 name: Tests
+env:
+  AEMBIT_STACK_DOMAIN: ${{ vars.AEMBIT_STACK_DOMAIN }}
+  AEMBIT_TENANT_ID: ${{ vars.AEMBIT_TENANT_ID }}
+  AEMBIT_TOKEN: ${{ vars.AEMBIT_TOKEN }}  # TEMPORARY to be replaced by Aembit Credential Provider Authentication
 
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
@@ -22,7 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version-file: 'go.mod'
@@ -35,9 +42,13 @@ jobs:
           version: latest
 
   generate:
+    name: Generate Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version-file: 'go.mod'
@@ -59,13 +70,13 @@ jobs:
       matrix:
         # list whatever Terraform versions here you would like to support
         terraform:
-          - '1.0.*'
-          - '1.1.*'
-          - '1.2.*'
-          - '1.3.*'
-          - '1.4.*'
+          - '1.6.*'
+          - '1.7.*'
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version-file: 'go.mod'

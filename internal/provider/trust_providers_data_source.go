@@ -23,7 +23,7 @@ func NewTrustProvidersDataSource() datasource.DataSource {
 
 // trustProvidersDataSource is the data source implementation.
 type trustProvidersDataSource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,7 +32,7 @@ func (d *trustProvidersDataSource) Configure(_ context.Context, req datasource.C
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
@@ -51,7 +51,7 @@ func (d *trustProvidersDataSource) Metadata(_ context.Context, req datasource.Me
 }
 
 // Schema defines the schema for the resource.
-func (r *trustProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an trust provider.",
 		Attributes: map[string]schema.Attribute{
@@ -88,7 +88,7 @@ func (r *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state trustProvidersDataSourceModel
 
-	trust_providers, err := d.client.GetTrustProviders(nil)
+	trustProviders, err := d.client.GetTrustProviders(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Trust Providers",
@@ -98,12 +98,12 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	// Map response body to model
-	for _, trust_provider := range trust_providers {
+	for _, trustProvider := range trustProviders {
 		trustProviderState := trustProviderResourceModel{
-			ID:          types.StringValue(trust_provider.EntityDTO.ExternalId),
-			Name:        types.StringValue(trust_provider.EntityDTO.Name),
-			Description: types.StringValue(trust_provider.EntityDTO.Description),
-			IsActive:    types.BoolValue(trust_provider.EntityDTO.IsActive),
+			ID:          types.StringValue(trustProvider.EntityDTO.ExternalID),
+			Name:        types.StringValue(trustProvider.EntityDTO.Name),
+			Description: types.StringValue(trustProvider.EntityDTO.Description),
+			IsActive:    types.BoolValue(trustProvider.EntityDTO.IsActive),
 		}
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
