@@ -62,6 +62,12 @@ jobs:
         run: |
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+      - name: Archive QA Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-aembit-docs
+          path: docs
+          retention-days: 14
 
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:

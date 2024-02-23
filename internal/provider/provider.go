@@ -204,6 +204,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewIntegrationResource,
 		NewAccessConditionResource,
 		NewAccessPolicyResource,
+		NewAgentControllerResource,
 	}
 }
 

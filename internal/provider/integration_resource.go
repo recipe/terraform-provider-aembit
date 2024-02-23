@@ -79,7 +79,7 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of Aembit integration (either WizIntegrationApi or CrowdStrike).",
+				Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"WizIntegrationApi", "CrowdStrike"}...),
