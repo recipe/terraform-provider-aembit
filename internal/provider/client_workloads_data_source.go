@@ -81,8 +81,8 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Type of client workload.",
 							Computed:    true,
 						},
-						"identities": schema.ListNestedAttribute{
-							Description: "List of client workload identities.",
+						"identities": schema.SetNestedAttribute{
+							Description: "Set of client workload identities.",
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
@@ -126,15 +126,7 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			IsActive:    types.BoolValue(client_workload.EntityDTO.IsActive),
 			Type:        types.StringValue(client_workload.Type),
 		}
-
-		var newIdentities []identitiesModel
-		for _, identityItem := range client_workload.Identities {
-			newIdentities = append(newIdentities, identitiesModel{
-				Type:  types.StringValue(identityItem.Type),
-				Value: types.StringValue(identityItem.Value),
-			})
-		}
-		clientWorkloadState.Identities = newIdentities
+		clientWorkloadState.Identities = newClientWorkloadIdentityModel(ctx, client_workload.Identities)
 
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}

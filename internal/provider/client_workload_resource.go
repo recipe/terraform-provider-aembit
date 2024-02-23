@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -81,8 +80,8 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Type of client workload.",
 				Computed:    true,
 			},
-			"identities": schema.ListNestedAttribute{
-				Description: "List of client workload identities.",
+			"identities": schema.SetNestedAttribute{
+				Description: "Set of client workload identities.",
 				Required:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -112,19 +111,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ClientWorkloadExternalDTO
-	workload.EntityDTO = aembit.EntityDTO{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-
-	for _, identity := range plan.Identities {
-		workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
-			Type:  identity.Type.ValueString(),
-			Value: identity.Value.ValueString(),
-		})
-	}
+	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, nil)
 
 	// Create new Client Workload
 	client_workload, err := r.client.CreateClientWorkload(workload, nil)
@@ -137,18 +124,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(client_workload.EntityDTO.Name)
-	plan.Description = types.StringValue(client_workload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(client_workload.Type)
-
-	for identityIndex, identityItem := range client_workload.Identities {
-		plan.Identities[identityIndex] = identitiesModel{
-			Type:  types.StringValue(identityItem.Type),
-			Value: types.StringValue(identityItem.Value),
-		}
-	}
+	plan = convertClientWorkloadDTOToModel(ctx, *client_workload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -179,51 +155,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	state.Name = types.StringValue(client_workload.EntityDTO.Name)
-	state.Description = types.StringValue(client_workload.EntityDTO.Description)
-	state.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	state.Type = types.StringValue(client_workload.Type)
-
-	// Check for changes in the Identities list.
-	var mismatch bool = false
-	if len(state.Identities) != len(client_workload.Identities) {
-		// The count of Identities on the backend is different from the Terraform state.
-		// Replace the state with the backend configuration.
-		tflog.Debug(ctx, "Count of Client Workload identities differs from Terraform state.")
-		// Mark mismatch to override Terraform state with backend configuration.
-		mismatch = true
-	}
-	// Compare the identity list contents between backend and Terraform state.
-	// Only perform this check if we haven't already found a difference.
-	if mismatch == false {
-		identity_exists := make(map[string]string)
-		for _, identity := range state.Identities {
-			// Build map of identities from Terraform state.
-			identity_exists[identity.Type.ValueString()] = identity.Value.ValueString()
-		}
-		for _, identityItem := range client_workload.Identities {
-			// Compare retrieved identities with Terraform state.
-			val, ok := identity_exists[identityItem.Type]
-			if !ok || val != identityItem.Value {
-				// Mismatch found.
-				tflog.Debug(ctx, "Client Workload identity list differs from Terraform state.")
-				mismatch = true
-				break
-			}
-		}
-	}
-	if mismatch == true {
-		// Backend doesn't match Terraform state--replace Terraform state.
-		var newIdentities []identitiesModel
-		for _, identityItem := range client_workload.Identities {
-			newIdentities = append(newIdentities, identitiesModel{
-				Type:  types.StringValue(identityItem.Type),
-				Value: types.StringValue(identityItem.Value),
-			})
-		}
-		state.Identities = newIdentities
-	}
+	state = convertClientWorkloadDTOToModel(ctx, client_workload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -256,20 +188,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ClientWorkloadExternalDTO
-	workload.EntityDTO = aembit.EntityDTO{
-		ExternalId:  external_id,
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-
-	for _, identity := range plan.Identities {
-		workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
-			Type:  identity.Type.ValueString(),
-			Value: identity.Value.ValueString(),
-		})
-	}
+	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, &external_id)
 
 	// Update Client Workload
 	client_workload, err := r.client.UpdateClientWorkload(workload, nil)
@@ -282,21 +201,10 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(client_workload.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(client_workload.EntityDTO.Name)
-	plan.Description = types.StringValue(client_workload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(client_workload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(client_workload.Type)
-
-	for identityIndex, identityItem := range client_workload.Identities {
-		plan.Identities[identityIndex] = identitiesModel{
-			Type:  types.StringValue(identityItem.Type),
-			Value: types.StringValue(identityItem.Value),
-		}
-	}
+	state = convertClientWorkloadDTOToModel(ctx, *client_workload)
 
 	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -337,4 +245,58 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadResourceModel, external_id *string) aembit.ClientWorkloadExternalDTO {
+	var workload aembit.ClientWorkloadExternalDTO
+	workload.EntityDTO = aembit.EntityDTO{
+		Name:        model.Name.ValueString(),
+		Description: model.Description.ValueString(),
+		IsActive:    model.IsActive.ValueBool(),
+	}
+
+	var identities []identitiesModel
+	if len(model.Identities.Elements()) > 0 {
+		_ = model.Identities.ElementsAs(ctx, &identities, false)
+
+		for _, identity := range identities {
+			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
+				Type:  identity.Type.ValueString(),
+				Value: identity.Value.ValueString(),
+			})
+		}
+
+	}
+
+	if external_id != nil {
+		workload.EntityDTO.ExternalId = *external_id
+	}
+
+	return workload
+}
+
+func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) clientWorkloadResourceModel {
+	var model clientWorkloadResourceModel
+	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.Name = types.StringValue(dto.EntityDTO.Name)
+	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Type = types.StringValue(dto.Type)
+	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
+
+	return model
+}
+
+func newClientWorkloadIdentityModel(ctx context.Context, clientWorkloadIdentities []aembit.ClientWorkloadIdentityDTO) types.Set {
+	identities := make([]identitiesModel, len(clientWorkloadIdentities))
+
+	for i, identity := range clientWorkloadIdentities {
+		identities[i] = identitiesModel{
+			Type:  types.StringValue(identity.Type),
+			Value: types.StringValue(identity.Value),
+		}
+	}
+
+	s, _ := types.SetValueFrom(ctx, TfIdentityObjectType, identities)
+	return s
 }
