@@ -27,7 +27,7 @@ type identitiesModel struct {
 	Value types.String `tfsdk:"value"`
 }
 
-// TfIdentityObjectType maps client workload identity data to an Object type
+// TfIdentityObjectType maps client workload identity data to an Object type.
 var TfIdentityObjectType = types.ObjectType{AttrTypes: map[string]attr.Type{
 	"type":  types.StringType,
 	"value": types.StringType,
