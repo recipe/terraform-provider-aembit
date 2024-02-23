@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `identities` (Attributes List) List of client workload identities. (see [below for nested schema](#nestedatt--identities))
+- `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--identities))
 - `name` (String) User-provided name of the client workload.
 
 ### Optional
