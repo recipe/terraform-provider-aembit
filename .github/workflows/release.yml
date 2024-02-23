@@ -13,8 +13,14 @@ on:
 permissions:
   contents: write
 
+# Ensure only one workflow run at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   goreleaser:
+    name: GoReleaser Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1

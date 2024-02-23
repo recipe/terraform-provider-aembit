@@ -19,6 +19,11 @@ on:
 permissions:
   contents: read
 
+# Ensure only one workflow run at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Ensure project builds before running testing matrix
   build:
