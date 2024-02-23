@@ -33,3 +33,9 @@ website/vendor
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
+
+# Exclude binaries
+terraform-provider-aembit
+
+# Exclude code coverage
+coverage.*

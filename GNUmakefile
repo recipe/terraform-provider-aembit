@@ -14,7 +14,8 @@ install:
 .PHONY: testacc
 testacc: install
 	cd internal/provider
-	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m
+	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage.out
+	go tool cover -html coverage.out -o coverage.html
 
 # Locally create a build for local/qa testing using GoReleaser
 #	Reference: https://developer.hashicorp.com/terraform/registry/providers/publishing#using-goreleaser-locally
