@@ -22,6 +22,10 @@ Manages client workloads.
 <a id="nestedatt--client_workloads"></a>
 ### Nested Schema for `client_workloads`
 
+Optional:
+
+- `tags` (Map of String)
+
 Read-Only:
 
 - `description` (String) User-provided description of the client workload.

@@ -24,6 +24,7 @@ description: |-
 
 - `description` (String) User-provided description of the client workload.
 - `is_active` (Boolean) Active/Inactive status of the client workload.
+- `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
