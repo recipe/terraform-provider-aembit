@@ -26,6 +26,10 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "k8sNamespace"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.value", "unittest1namespace"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "type"),
@@ -45,6 +49,10 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
 					// Verify Service Endpoint Host updated.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

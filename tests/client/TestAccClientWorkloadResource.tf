@@ -11,5 +11,9 @@ resource "aembit_client_workload" "test" {
             value = "unittest1namespace"
         },
     ]
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
 }
 
