@@ -299,9 +299,7 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Type = types.StringValue(dto.Type)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
-	if len(dto.EntityDTO.Tags) > 0 {
-		model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
-	}
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	return model
 }
