@@ -14,6 +14,7 @@ type clientWorkloadResourceModel struct {
 	IsActive    types.Bool   `tfsdk:"is_active"`
 	Identities  types.Set    `tfsdk:"identities"`
 	Type        types.String `tfsdk:"type"`
+	Tags        types.Map    `tfsdk:"tags"`
 }
 
 // clientWorkloadDataSourceModel maps the datasource schema.

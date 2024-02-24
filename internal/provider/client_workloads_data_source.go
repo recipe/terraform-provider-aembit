@@ -97,6 +97,11 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 								},
 							},
 						},
+						"tags": schema.MapAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -127,6 +132,7 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Type:        types.StringValue(client_workload.Type),
 		}
 		clientWorkloadState.Identities = newClientWorkloadIdentityModel(ctx, client_workload.Identities)
+		clientWorkloadState.Tags = newTagsModel(ctx, client_workload.Tags)
 
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}

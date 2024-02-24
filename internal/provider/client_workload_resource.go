@@ -96,6 +96,11 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 					},
 				},
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -267,6 +272,18 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadRe
 
 	}
 
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			workload.Tags = append(workload.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
+	}
+
 	if externalID != nil {
 		workload.EntityDTO.ExternalID = *externalID
 	}
@@ -282,6 +299,7 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Type = types.StringValue(dto.Type)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	return model
 }
