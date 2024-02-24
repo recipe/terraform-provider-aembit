@@ -59,20 +59,34 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the access policy.",
+				Description: "Alphanumeric identifier of the Access Policy.",
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the access policy.",
+				Description: "Active/Inactive status of the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"client_workload": schema.StringAttribute{
-				Description: "Client workload ID configured in the access policy.",
+				Description: "Client workload ID configured in the Access Policy.",
 				Required:    true,
 			},
+			"trust_providers": schema.SetAttribute{
+				Description: "Set of Trust Providers to enforce on the Access Policy.",
+				Optional:    true,
+				ElementType: types.StringType,
+			},
+			"access_conditions": schema.SetAttribute{
+				Description: "Set of Access Conditions to enforce on the Access Policy.",
+				Optional:    true,
+				ElementType: types.StringType,
+			},
+			"credential_provider": schema.StringAttribute{
+				Description: "Credential Provider ID configured in the Access Policy.",
+				Optional:    true,
+			},
 			"server_workload": schema.StringAttribute{
-				Description: "Server workload ID configured in the access policy.",
+				Description: "Server workload ID configured in the Access Policy.",
 				Required:    true,
 			},
 		},
@@ -232,9 +246,19 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	}
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
+	policy.CredentialProvider = model.CredentialProvider.ValueString()
 
 	if externalID != nil {
 		policy.EntityDTO.ExternalID = *externalID
+	}
+
+	policy.TrustProviders = make([]string, len(model.TrustProviders))
+	for i, trustProvider := range model.TrustProviders {
+		policy.TrustProviders[i] = trustProvider.ValueString()
+	}
+	policy.AccessConditions = make([]string, len(model.AccessConditions))
+	for i, accessConditions := range model.AccessConditions {
+		policy.AccessConditions[i] = accessConditions.ValueString()
 	}
 
 	return policy
@@ -247,6 +271,23 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload)
 
+	if len(dto.CredentialProvider) > 0 {
+		model.CredentialProvider = types.StringValue(dto.CredentialProvider)
+	}
+
+	if len(dto.TrustProviders) > 0 {
+		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+		for i, trustProvider := range dto.TrustProviders {
+			model.TrustProviders[i] = types.StringValue(trustProvider)
+		}
+	}
+	if len(dto.AccessConditions) > 0 {
+		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+		for i, accessConditions := range dto.AccessConditions {
+			model.AccessConditions[i] = types.StringValue(accessConditions)
+		}
+	}
+
 	return model
 }
 
@@ -256,6 +297,23 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessP
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalID)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalID)
+
+	if len(dto.CredentialProvider.ExternalID) > 0 {
+		model.CredentialProvider = types.StringValue(dto.CredentialProvider.ExternalID)
+	}
+
+	if len(dto.TrustProviders) > 0 {
+		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+		for i, trustProvider := range dto.TrustProviders {
+			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
+		}
+	}
+	if len(dto.AccessConditions) > 0 {
+		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+		for i, accessConditions := range dto.AccessConditions {
+			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
+		}
+	}
 
 	return model
 }

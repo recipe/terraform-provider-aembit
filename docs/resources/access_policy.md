@@ -17,13 +17,16 @@ description: |-
 
 ### Required
 
-- `client_workload` (String) Client workload ID configured in the access policy.
-- `server_workload` (String) Server workload ID configured in the access policy.
+- `client_workload` (String) Client workload ID configured in the Access Policy.
+- `server_workload` (String) Server workload ID configured in the Access Policy.
 
 ### Optional
 
-- `is_active` (Boolean) Active/Inactive status of the access policy.
+- `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
+- `credential_provider` (String) Credential Provider ID configured in the Access Policy.
+- `is_active` (Boolean) Active/Inactive status of the Access Policy.
+- `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the access policy.
+- `id` (String) Alphanumeric identifier of the Access Policy.
