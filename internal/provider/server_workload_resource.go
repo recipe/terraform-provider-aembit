@@ -126,6 +126,25 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Computed:    true,
 					},
+					"workload_service_authentication": schema.SingleNestedAttribute{
+						Description: "Service authentication details.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"method": schema.StringAttribute{
+								Description: "Service authentication method.",
+								Required:    true,
+							},
+							"scheme": schema.StringAttribute{
+								Description: "Service authentication scheme.",
+								Required:    true,
+							},
+							"config": schema.StringAttribute{
+								Description: "Service authentication config.",
+								Optional:    true,
+								Computed:    true,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -143,24 +162,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO
-	workload.EntityDTO = aembit.EntityDTO{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-
-	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
-		Host:              plan.ServiceEndpoint.Host.ValueString(),
-		ID:                int(plan.ServiceEndpoint.ID.ValueInt64()),
-		Port:              int(plan.ServiceEndpoint.Port.ValueInt64()),
-		AppProtocol:       plan.ServiceEndpoint.AppProtocol.ValueString(),
-		TransportProtocol: plan.ServiceEndpoint.TransportProtocol.ValueString(),
-		RequestedPort:     int(plan.ServiceEndpoint.RequestedPort.ValueInt64()),
-		RequestedTLS:      plan.ServiceEndpoint.RequestedTLS.ValueBool(),
-		TLS:               plan.ServiceEndpoint.TLS.ValueBool(),
-		TLSVerification:   plan.ServiceEndpoint.TLSVerification.ValueString(),
-	}
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, nil)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
@@ -173,23 +175,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(serverWorkload.EntityDTO.ExternalID)
-	plan.Name = types.StringValue(serverWorkload.EntityDTO.Name)
-	plan.Description = types.StringValue(serverWorkload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(serverWorkload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(serverWorkload.Type)
-
-	plan.ServiceEndpoint = &serviceEndpointModel{
-		ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
-		Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
-		Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
-		AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
-		TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
-		RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
-		RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
-		TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
-		TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
-	}
+	plan = convertServerWorkloadDTOToModel(*serverWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -220,23 +206,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state.ID = types.StringValue(serverWorkload.EntityDTO.ExternalID)
-	state.Name = types.StringValue(serverWorkload.EntityDTO.Name)
-	state.Description = types.StringValue(serverWorkload.EntityDTO.Description)
-	state.IsActive = types.BoolValue(serverWorkload.EntityDTO.IsActive)
-	state.Type = types.StringValue(serverWorkload.Type)
-
-	state.ServiceEndpoint = &serviceEndpointModel{
-		ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
-		Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
-		Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
-		AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
-		TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
-		RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
-		RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
-		TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
-		TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
-	}
+	state = convertServerWorkloadDTOToModel(serverWorkload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -268,23 +238,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO
-	workload.EntityDTO = aembit.EntityDTO{
-		ExternalID:  externalID,
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
-		Host:              plan.ServiceEndpoint.Host.ValueString(),
-		Port:              int(plan.ServiceEndpoint.Port.ValueInt64()),
-		AppProtocol:       plan.ServiceEndpoint.AppProtocol.ValueString(),
-		TransportProtocol: plan.ServiceEndpoint.TransportProtocol.ValueString(),
-		RequestedPort:     int(plan.ServiceEndpoint.RequestedPort.ValueInt64()),
-		RequestedTLS:      plan.ServiceEndpoint.RequestedTLS.ValueBool(),
-		TLS:               plan.ServiceEndpoint.TLS.ValueBool(),
-		TLSVerification:   plan.ServiceEndpoint.TLSVerification.ValueString(),
-	}
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, &externalID)
 
 	// Update Server Workload
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
@@ -297,25 +251,10 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(serverWorkload.EntityDTO.ExternalID)
-	plan.Name = types.StringValue(serverWorkload.EntityDTO.Name)
-	plan.Description = types.StringValue(serverWorkload.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(serverWorkload.EntityDTO.IsActive)
-	plan.Type = types.StringValue(serverWorkload.Type)
-	plan.ServiceEndpoint = &serviceEndpointModel{
-		ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
-		Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
-		Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
-		AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
-		TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
-		RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
-		TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
-		RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
-		TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
-	}
+	state = convertServerWorkloadDTOToModel(*serverWorkload)
 
 	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -352,8 +291,74 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId.
+// Imports an existing resource by passing externalID.
 func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import externalId and save to id attribute
+	// Retrieve import externalID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func convertServerWorkloadModelToDTO(model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
+	var workload aembit.ServerWorkloadExternalDTO
+	workload.EntityDTO = aembit.EntityDTO{
+		Name:        model.Name.ValueString(),
+		Description: model.Description.ValueString(),
+		IsActive:    model.IsActive.ValueBool(),
+	}
+
+	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
+		Host:              model.ServiceEndpoint.Host.ValueString(),
+		ID:                int(model.ServiceEndpoint.ID.ValueInt64()),
+		Port:              int(model.ServiceEndpoint.Port.ValueInt64()),
+		AppProtocol:       model.ServiceEndpoint.AppProtocol.ValueString(),
+		TransportProtocol: model.ServiceEndpoint.TransportProtocol.ValueString(),
+		RequestedPort:     int(model.ServiceEndpoint.RequestedPort.ValueInt64()),
+		RequestedTLS:      model.ServiceEndpoint.RequestedTLS.ValueBool(),
+		TLS:               model.ServiceEndpoint.TLS.ValueBool(),
+		TLSVerification:   model.ServiceEndpoint.TLSVerification.ValueString(),
+	}
+
+	if model.ServiceEndpoint.WorkloadServiceAuthentication != nil {
+		workload.ServiceEndpoint.WorkloadServiceAuthentication = &aembit.WorkloadServiceAuthenticationDTO{
+			Method: model.ServiceEndpoint.WorkloadServiceAuthentication.Method.ValueString(),
+			Scheme: model.ServiceEndpoint.WorkloadServiceAuthentication.Scheme.ValueString(),
+			Config: model.ServiceEndpoint.WorkloadServiceAuthentication.Config.ValueString(),
+		}
+	}
+
+	if externalID != nil {
+		workload.EntityDTO.ExternalID = *externalID
+	}
+
+	return workload
+}
+
+func convertServerWorkloadDTOToModel(dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
+	var model serverWorkloadResourceModel
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
+	model.Name = types.StringValue(dto.EntityDTO.Name)
+	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Type = types.StringValue(dto.Type)
+
+	model.ServiceEndpoint = &serviceEndpointModel{
+		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),
+		Host:              types.StringValue(dto.ServiceEndpoint.Host),
+		Port:              types.Int64Value(int64(dto.ServiceEndpoint.Port)),
+		AppProtocol:       types.StringValue(dto.ServiceEndpoint.AppProtocol),
+		TransportProtocol: types.StringValue(dto.ServiceEndpoint.TransportProtocol),
+		RequestedPort:     types.Int64Value(int64(dto.ServiceEndpoint.RequestedPort)),
+		RequestedTLS:      types.BoolValue(dto.ServiceEndpoint.RequestedTLS),
+		TLS:               types.BoolValue(dto.ServiceEndpoint.TLS),
+		TLSVerification:   types.StringValue(dto.ServiceEndpoint.TLSVerification),
+	}
+
+	if dto.ServiceEndpoint.WorkloadServiceAuthentication != nil {
+		model.ServiceEndpoint.WorkloadServiceAuthentication = &workloadServiceAuthenticationModel{
+			Scheme: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
+			Method: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Method),
+			Config: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Config),
+		}
+	}
+
+	return model
 }

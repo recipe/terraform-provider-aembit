@@ -30,13 +30,13 @@ type serviceEndpointModel struct {
 	Port              types.Int64  `tfsdk:"port"`
 	TLS               types.Bool   `tfsdk:"tls"`
 
-	//WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
-	TLSVerification types.String `tfsdk:"tls_verification"`
+	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
+	TLSVerification               types.String                        `tfsdk:"tls_verification"`
 }
 
 // workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
-//type workloadServiceAuthenticationModel struct {
-//	Method types.String `tfsdk:"method"`
-//	Scheme types.String `tfsdk:"scheme"`
-//	Config types.String `tfsdk:"config"`
-//}
+type workloadServiceAuthenticationModel struct {
+	Method types.String `tfsdk:"method"`
+	Scheme types.String `tfsdk:"scheme"`
+	Config types.String `tfsdk:"config"`
+}

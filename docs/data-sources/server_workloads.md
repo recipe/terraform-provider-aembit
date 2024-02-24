@@ -34,6 +34,10 @@ Read-Only:
 <a id="nestedatt--server_workloads--service_endpoint"></a>
 ### Nested Schema for `server_workloads.service_endpoint`
 
+Optional:
+
+- `workload_service_authentication` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--server_workloads--service_endpoint--workload_service_authentication))
+
 Read-Only:
 
 - `app_protocol` (String) protocol of the service endpoint.
@@ -46,3 +50,12 @@ Read-Only:
 - `tls` (Boolean) tls of the service endpoint.
 - `tls_verification` (String) tls verification of the service endpoint.
 - `transport_protocol` (String) transport protocol of the service endpoint.
+
+<a id="nestedatt--server_workloads--service_endpoint--workload_service_authentication"></a>
+### Nested Schema for `server_workloads.service_endpoint.workload_service_authentication`
+
+Read-Only:
+
+- `config` (String) Service authentication config.
+- `method` (String) Service authentication method.
+- `scheme` (String) Service authentication scheme.

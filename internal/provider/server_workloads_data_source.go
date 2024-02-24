@@ -141,22 +141,25 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
-								//"http_headers": schema.ListNestedAttribute{
-								//	Description: "List of HTTP headers.",
-								//	Computed:    true,
-								//	NestedObject: schema.NestedAttributeObject{
-								//		Attributes: map[string]schema.Attribute{
-								//			"key": schema.StringAttribute{
-								//				Description: "HTTP Header Key.",
-								//				Computed:    true,
-								//			},
-								//			"value": schema.StringAttribute{
-								//				Description: "HTTP Header value.",
-								//				Computed:    true,
-								//			},
-								//		},
-								//	},
-								//},
+								"workload_service_authentication": schema.SingleNestedAttribute{
+									Description: "Service authentication details.",
+									Computed:    true,
+									Optional:    true,
+									Attributes: map[string]schema.Attribute{
+										"method": schema.StringAttribute{
+											Description: "Service authentication method.",
+											Computed:    true,
+										},
+										"scheme": schema.StringAttribute{
+											Description: "Service authentication scheme.",
+											Computed:    true,
+										},
+										"config": schema.StringAttribute{
+											Description: "Service authentication config.",
+											Computed:    true,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -201,18 +204,6 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
 			TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
 		}
-
-		/*
-			 * GetServerWorkloads does not return WorkloadServiceAuthentication information.
-			if server_workload.ServiceEndpoint.WorkloadServiceAuthentication != nil {
-				serverWorkloadState.ServiceEndpoint.WorkloadServiceAuthentication = workloadServiceAuthenticationModel{
-					Method: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Method),
-					Scheme: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
-					Config: types.StringValue(server_workload.ServiceEndpoint.WorkloadServiceAuthentication.Config),
-				}
-
-			}
-		*/
 
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}

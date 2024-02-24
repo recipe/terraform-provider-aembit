@@ -1,30 +1,22 @@
 package provider
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccServerWorkloadResource(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tfmod")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_server_workload" "test" {
-	name = "Unit Test 1"
-	service_endpoint = {
-		host = "unittest.testhost.com"
-		port = 443
-		app_protocol = "HTTP"
-		transport_protocol = "TCP"
-		requested_port = 80
-		tls_verification = "full"
-	}
-}
-`,
+				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
@@ -35,6 +27,8 @@ resource "aembit_server_workload" "test" {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Bearer"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
@@ -51,24 +45,14 @@ resource "aembit_server_workload" "test" {
 			},
 			// Update and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_server_workload" "test" {
-	name = "Unit Test 1 - Modified"
-	service_endpoint = {
-		host = "unittest.testhost2.com"
-		port = 443
-		app_protocol = "HTTP"
-		transport_protocol = "TCP"
-		requested_port = 80
-		tls_verification = "full"
-	}
-}
-`,
+				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
-					// Verify Service Endpoint Host updated.
+					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost2.com"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "Password Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Password"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
