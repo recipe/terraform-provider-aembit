@@ -4,10 +4,21 @@
 package provider
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"time"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -15,6 +26,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Ensure AembitProvider satisfies various provider interfaces.
@@ -34,6 +47,7 @@ type aembitProviderModel struct {
 	Tenant      types.String `tfsdk:"tenant"`
 	Token       types.String `tfsdk:"token"`
 	StackDomain types.String `tfsdk:"stack_domain"`
+	ClientID    types.String `tfsdk:"client_id"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -55,16 +69,33 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"tenant": schema.StringAttribute{
-				Optional: true,
+				Description: "Tenant ID of the specific Aembit Cloud instance",
+				Optional:    true,
+			},
+			"client_id": schema.StringAttribute{
+				Description: "The Aembit Trust Provider Client ID to use for authentication to the Aembit Cloud Tenant instance (recommended).",
+				Optional:    true,
 			},
 			"token": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Description: "Access Token to use for authentication to the Aembit Cloud Tenant instance",
+				Optional:    true,
+				Sensitive:   true,
 			},
 			"stack_domain": schema.StringAttribute{
-				Optional: true,
+				Description: "For development purposes only",
+				Optional:    true,
 			},
 		},
+	}
+}
+
+// Configure validators to ensure that only one credential provider type is specified.
+func (p *aembitProvider) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("client_id"),
+			path.MatchRoot("token"),
+		),
 	}
 }
 
@@ -128,6 +159,27 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if !config.StackDomain.IsNull() {
 		stackDomain = config.StackDomain.ValueString()
+	}
+
+	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
+	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
+	if len(aembitClientID) > 0 {
+		idToken, err := getIdentityToken(aembitClientID, stackDomain)
+		if err == nil {
+			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
+			if err == nil {
+				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+				if err == nil {
+					token = roleToken
+				} else {
+					fmt.Printf("WARNING: Failed to get Aembit API Role Token: %v\n", err)
+				}
+			} else {
+				fmt.Printf("WARNING: Failed to get Aembit Token: %v\n", err)
+			}
+		} else {
+			fmt.Printf("WARNING: Failed to get ID Token: %v\n", err)
+		}
 	}
 
 	// If any of the expected configurations are missing, return
@@ -216,4 +268,260 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewClientWorkloadsDataSource,
 		NewAccessPoliciesDataSource,
 	}
+}
+
+// // Temporary until Aembit SDK is published.
+var GCP_ID_TOKEN string
+var GITHUB_ID_TOKEN string
+var TERRAFORM_ID_TOKEN string
+var AEMBIT_TOKEN string
+
+type ClientRequestNetwork struct {
+	TargetHost        string `json:"targetHost"`
+	TargetPort        int16  `json:"targetPort"`
+	TransportProtocol string `json:"transportProtocol"`
+}
+
+type ClientRequest struct {
+	Version string               `json:"version"`
+	Network ClientRequestNetwork `json:"network"`
+}
+
+type WorkloadAssessmentIdToken struct {
+	IdentityToken string `json:"identityToken"`
+}
+
+type WorkloadAssessment struct {
+	Version string                    `json:"version"`
+	GitHub  WorkloadAssessmentIdToken `json:"github"`
+}
+
+type tokenAuth struct {
+	token string
+}
+
+func (t tokenAuth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
+	return map[string]string{
+		"authorization": "Bearer " + t.token,
+	}, nil
+}
+
+func (tokenAuth) RequireTransportSecurity() bool {
+	return true
+}
+
+func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
+	var err error
+	var clientRequest, workloadAssessment []byte
+	var conn *grpc.ClientConn
+	var aembitClient EdgeCommanderClient
+	var credResponse *CredentialResponse
+
+	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false})
+	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	if clientRequest, err = json.Marshal(ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}); err != nil {
+		return "", err
+	}
+	if workloadAssessment, err = json.Marshal(WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}); err != nil {
+		return "", err
+	}
+
+	aembitClient = NewEdgeCommanderClient(conn)
+	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
+		ClientRequest:      string(clientRequest),
+		AgentAssessment:    string(workloadAssessment),
+		WorkloadAssessment: string(workloadAssessment),
+	}); err != nil {
+		return "", err
+	}
+
+	return credResponse.Credential, nil
+}
+
+func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
+	if isTokenValid(AEMBIT_TOKEN) {
+		return AEMBIT_TOKEN, nil
+	}
+
+	details := url.Values{}
+	details.Set("grant_type", "client_credentials")
+	details.Set("client_id", clientId)
+	attestationData := map[string]interface{}{
+		"version": "1.0.0",
+		"github": map[string]interface{}{
+			"identityToken": idToken,
+		},
+	}
+	attestationJSON, err := json.Marshal(attestationData)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal attestation data: %w", err)
+	}
+	details.Set("attestation", string(attestationJSON))
+
+	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getTenantId(clientId), stackDomain)
+	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch aembit token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var tokenResponse struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(body, &tokenResponse); err != nil {
+		return "", fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	AEMBIT_TOKEN = tokenResponse.AccessToken
+	return AEMBIT_TOKEN, nil
+}
+
+func getIdentityToken(clientId, stackDomain string) (string, error) {
+	// First, determine which token type we need to get based on the identity type
+	switch getIdentityType((clientId)) {
+	case "gcp_idtoken":
+		return getGcpIdentityToken(clientId, stackDomain)
+	case "github_idtoken":
+		return getGitHubIdentityToken(clientId, stackDomain)
+	case "terraform_idtoken":
+	}
+	return "", fmt.Errorf("no matching id token configuration")
+}
+
+func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
+	if isTokenValid(GCP_ID_TOKEN) {
+		return GCP_ID_TOKEN, nil
+	}
+
+	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	metadataIdentityTokenUrl := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s", url.QueryEscape(audience))
+
+	req, err := http.NewRequest("GET", metadataIdentityTokenUrl, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+	req.Header.Set("Metadata-Flavor", "Google")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch GCP ID Token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	GCP_ID_TOKEN = string(body)
+	return GCP_ID_TOKEN, nil
+}
+
+func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
+	if isTokenValid(GITHUB_ID_TOKEN) {
+		return GITHUB_ID_TOKEN, nil
+	}
+
+	tokenRequestURL := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_URL")
+	tokenRequestToken := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+	if len(tokenRequestURL) == 0 || len(tokenRequestToken) == 0 {
+		return "", fmt.Errorf("github action not configured for id_token access")
+	}
+
+	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	identityTokenURL := fmt.Sprintf("%s&audience=%s", tokenRequestURL, url.QueryEscape(audience))
+
+	req, err := http.NewRequest("GET", identityTokenURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create http request: %w", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenRequestToken))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch github id token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	jsonBody := make(map[string]interface{})
+	err = json.Unmarshal(body, &jsonBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse response body: %w", err)
+	}
+
+	GITHUB_ID_TOKEN, ok := jsonBody["value"].(string)
+	if !ok {
+		return "", fmt.Errorf("failed to parse response value: %w", err)
+	}
+	return GITHUB_ID_TOKEN, nil
+}
+
+func getTenantId(clientId string) string {
+	clientIdSplit := strings.Split(clientId, ":")
+	if len(clientIdSplit) >= 3 {
+		return clientIdSplit[2]
+	}
+
+	return ""
+}
+
+func getIdentityType(clientId string) string {
+	clientIdSplit := strings.Split(clientId, ":")
+	if len(clientIdSplit) >= 5 {
+		return clientIdSplit[4]
+	}
+
+	return ""
+}
+
+func isTokenValid(jwtToken string) bool {
+	var payload []byte
+	var expClaim float64
+	var err error
+	var ok bool
+
+	if jwtToken == "" || !strings.Contains(jwtToken, ".") || strings.Count(jwtToken, ".") != 2 {
+		return false
+	}
+
+	parts := strings.Split(jwtToken, ".")
+	if payload, err = base64.RawURLEncoding.DecodeString(parts[1]); err != nil {
+		return false
+	}
+
+	var claims map[string]interface{}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return false
+	}
+
+	if expClaim, ok = claims["exp"].(float64); !ok {
+		return false
+	}
+
+	// Calculate expiration with a 60-second safety window
+	expiration := time.Unix(int64(expClaim), 0).UTC().Add(-60 * time.Second)
+	return time.Now().UTC().Before(expiration)
 }

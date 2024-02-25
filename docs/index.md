@@ -23,6 +23,7 @@ provider "scaffolding" {
 
 ### Optional
 
-- `stack_domain` (String)
-- `tenant` (String)
-- `token` (String, Sensitive)
+- `client_id` (String) The Aembit Trust Provider Client ID to use for authentication to the Aembit Cloud Tenant instance (recommended).
+- `stack_domain` (String) For development purposes only
+- `tenant` (String) Tenant ID of the specific Aembit Cloud instance
+- `token` (String, Sensitive) Access Token to use for authentication to the Aembit Cloud Tenant instance

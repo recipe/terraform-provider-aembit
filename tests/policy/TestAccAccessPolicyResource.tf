@@ -8,7 +8,7 @@ resource "aembit_client_workload" "first_client" {
     identities = [
         {
             type = "k8sNamespace"
-            value = "clientworkload"
+            value = "clientworkloadNamespace"
         },
     ]
 }
