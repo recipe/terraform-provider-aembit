@@ -100,6 +100,10 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kerberos", "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kerberos", "id"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.day", "Sunday"),
 				),
 			},
 			// ImportState testing
@@ -114,6 +118,10 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "name", "TF Acceptance Kerberos - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

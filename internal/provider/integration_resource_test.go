@@ -24,6 +24,10 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 					resource.TestCheckResourceAttrSet("aembit_integration.wiz", "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_integration.wiz", "id"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.day", "Sunday"),
 				),
 			},
 			// ImportState testing
@@ -38,6 +42,10 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_integration.wiz", "name", "TF Acceptance Wiz - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_integration.wiz", "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
