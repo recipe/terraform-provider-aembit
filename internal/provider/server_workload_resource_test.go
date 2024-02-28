@@ -20,6 +20,10 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.day", "Sunday"),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost.com"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.port", "443"),
@@ -49,6 +53,10 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.day", "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost2.com"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),

@@ -15,5 +15,9 @@ resource "aembit_server_workload" "test" {
 			"scheme" = "Bearer"
 		}
 	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
 }
 

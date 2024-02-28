@@ -76,6 +76,11 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"type": schema.StringAttribute{
 				Description: "Type of server workload.",
 				Computed:    true,
@@ -162,7 +167,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, nil)
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, nil)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
@@ -175,7 +180,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertServerWorkloadDTOToModel(*serverWorkload)
+	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -206,7 +211,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state = convertServerWorkloadDTOToModel(serverWorkload)
+	state = convertServerWorkloadDTOToModel(ctx, serverWorkload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -238,7 +243,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, &externalID)
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, &externalID)
 
 	// Update Server Workload
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
@@ -251,7 +256,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertServerWorkloadDTOToModel(*serverWorkload)
+	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -297,12 +302,23 @@ func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.I
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertServerWorkloadModelToDTO(model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
+func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
+	}
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			workload.Tags = append(workload.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
 
 	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
@@ -332,13 +348,14 @@ func convertServerWorkloadModelToDTO(model serverWorkloadResourceModel, external
 	return workload
 }
 
-func convertServerWorkloadDTOToModel(dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
+func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
 	var model serverWorkloadResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Type = types.StringValue(dto.Type)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	model.ServiceEndpoint = &serviceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),

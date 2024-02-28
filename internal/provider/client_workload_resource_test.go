@@ -54,7 +54,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
-					// Verify Service Endpoint Host updated.
+					// Verify active state updated.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),

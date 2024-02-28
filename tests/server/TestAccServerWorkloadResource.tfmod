@@ -16,5 +16,9 @@ resource "aembit_server_workload" "test" {
 			"config" = "X-Vault-Token"
 		}
 	}
+    tags = {
+        color = "orange"
+        day   = "Tuesday"
+    }
 }
 
