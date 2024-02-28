@@ -23,4 +23,8 @@ resource "aembit_access_condition" "crowdstrike" {
 		match_serial_number = true
 		prevent_rfm = true
 	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
 }
