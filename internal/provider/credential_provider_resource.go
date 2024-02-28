@@ -78,6 +78,11 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"api_key": schema.SingleNestedAttribute{
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
@@ -195,7 +200,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(*credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -225,7 +230,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	state = convertCredentialProviderDTOToModel(credentialProvider, state)
+	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -270,7 +275,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(*credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -316,12 +321,23 @@ func (r *credentialProviderResource) ImportState(ctx context.Context, req resour
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderModelToDTO(_ context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderDTO {
+func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderDTO {
 	var credential aembit.CredentialProviderDTO
 	credential.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
+	}
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			credential.Tags = append(credential.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
 	if externalID != nil {
 		credential.EntityDTO.ExternalID = *externalID
@@ -385,12 +401,13 @@ func convertCredentialProviderModelToDTO(_ context.Context, model credentialProv
 	return credential
 }
 
-func convertCredentialProviderDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
+func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
 	var model credentialProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	// Set the objects to null to begin with
 	model.APIKey = nil
