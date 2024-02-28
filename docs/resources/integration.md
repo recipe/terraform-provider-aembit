@@ -27,6 +27,7 @@ description: |-
 
 - `description` (String) User-provided description of the integration.
 - `is_active` (Boolean) Active/Inactive status of the integration.
+- `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 

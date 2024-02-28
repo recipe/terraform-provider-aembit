@@ -22,6 +22,10 @@ Manages an server workload.
 <a id="nestedatt--server_workloads"></a>
 ### Nested Schema for `server_workloads`
 
+Optional:
+
+- `tags` (Map of String)
+
 Read-Only:
 
 - `description` (String) User-provided description of the server workload.

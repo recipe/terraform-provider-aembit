@@ -22,6 +22,10 @@ Manages an trust provider.
 <a id="nestedatt--trust_providers"></a>
 ### Nested Schema for `trust_providers`
 
+Optional:
+
+- `tags` (Map of String)
+
 Read-Only:
 
 - `description` (String) User-provided description of the trust provider.

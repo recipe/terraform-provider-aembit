@@ -23,6 +23,7 @@ description: |-
 
 - `description` (String) User-provided description of the agent controller.
 - `is_active` (Boolean) Active/Inactive status of the agent controller.
+- `tags` (Map of String) Tags are key-value pairs.
 - `trust_provider_id` (String) Trust Provider to use for authentication of the agent controller.
 
 ### Read-Only
