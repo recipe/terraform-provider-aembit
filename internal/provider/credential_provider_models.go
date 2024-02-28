@@ -11,6 +11,7 @@ type credentialProviderResourceModel struct {
 	Name                   types.String                                   `tfsdk:"name"`
 	Description            types.String                                   `tfsdk:"description"`
 	IsActive               types.Bool                                     `tfsdk:"is_active"`
+	Tags                   types.Map                                      `tfsdk:"tags"`
 	APIKey                 *credentialProviderAPIKeyModel                 `tfsdk:"api_key"`
 	OAuthClientCredentials *credentialProviderOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
 	VaultClientToken       *credentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`

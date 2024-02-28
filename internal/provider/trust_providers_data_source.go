@@ -77,6 +77,11 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Active/Inactive status of the trust provider.",
 							Computed:    true,
 						},
+						"tags": schema.MapAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -105,6 +110,7 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 			Description: types.StringValue(trustProvider.EntityDTO.Description),
 			IsActive:    types.BoolValue(trustProvider.EntityDTO.IsActive),
 		}
+		trustProviderState.Tags = newTagsModel(ctx, trustProvider.Tags)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

@@ -11,6 +11,7 @@ type trustProviderResourceModel struct {
 	Name          types.String                     `tfsdk:"name"`
 	Description   types.String                     `tfsdk:"description"`
 	IsActive      types.Bool                       `tfsdk:"is_active"`
+	Tags          types.Map                        `tfsdk:"tags"`
 	AzureMetadata *trustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
 	AwsMetadata   *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
 	Kerberos      *trustProviderKerberosModel      `tfsdk:"kerberos"`

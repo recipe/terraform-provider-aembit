@@ -11,6 +11,7 @@ type accessConditionResourceModel struct {
 	Name          types.String                     `tfsdk:"name"`
 	Description   types.String                     `tfsdk:"description"`
 	IsActive      types.Bool                       `tfsdk:"is_active"`
+	Tags          types.Map                        `tfsdk:"tags"`
 	IntegrationID types.String                     `tfsdk:"integration_id"`
 	Wiz           *accessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *accessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
@@ -30,5 +31,5 @@ type accessConditionCrowdstrikeModel struct {
 
 // accessConditionDataSourceModel maps the datasource schema.
 type accessConditionsDataSourceModel struct {
-	AccessConditions []accessConditionResourceModel `tfsdk:"accessConditions"`
+	AccessConditions []accessConditionResourceModel `tfsdk:"access_conditions"`
 }

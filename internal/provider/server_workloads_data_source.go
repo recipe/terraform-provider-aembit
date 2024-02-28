@@ -77,26 +77,15 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Active/Inactive status of the server workload.",
 							Computed:    true,
 						},
+						"tags": schema.MapAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Computed:    true,
+						},
 						"type": schema.StringAttribute{
 							Description: "Type of server workload.",
 							Computed:    true,
 						},
-						//"tags": schema.ListNestedAttribute{
-						//	Description: "List of Tags.",
-						//	Computed:    true,
-						//	NestedObject: schema.NestedAttributeObject{
-						//		Attributes: map[string]schema.Attribute{
-						//			"key": schema.StringAttribute{
-						//				Description: "Tag key.",
-						//				Computed:    true,
-						//			},
-						//			"value": schema.StringAttribute{
-						//				Description: "Tag value.",
-						//				Computed:    true,
-						//			},
-						//		},
-						//	},
-						//},
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,
@@ -191,6 +180,7 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			IsActive:    types.BoolValue(serverWorkload.EntityDTO.IsActive),
 			Type:        types.StringValue(serverWorkload.Type),
 		}
+		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
 			ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
