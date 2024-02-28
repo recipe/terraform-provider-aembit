@@ -78,6 +78,11 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"azure_metadata": schema.SingleNestedAttribute{
 				Description: "Azure Metadata type Trust Provider configuration.",
 				Optional:    true,
@@ -156,7 +161,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, nil)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, nil)
 
 	// Create new Trust Provider
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
@@ -169,7 +174,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(*trustProvider)
+	plan = convertTrustProviderDTOToModel(ctx, *trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -199,7 +204,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, trustProvider)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -231,7 +236,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, &externalID)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, &externalID)
 
 	// Update Trust Provider
 	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
@@ -244,7 +249,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(*trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, *trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -290,12 +295,23 @@ func (r *trustProviderResource) ImportState(ctx context.Context, req resource.Im
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertTrustProviderModelToDTO(model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
+func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
+	}
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			trust.Tags = append(trust.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
 	if externalID != nil {
 		trust.EntityDTO.ExternalID = *externalID
@@ -436,12 +452,13 @@ func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.Tru
 	}
 }
 
-func convertTrustProviderDTOToModel(dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	switch dto.Provider {
 	case "AzureMetadataService": // Azure Metadata

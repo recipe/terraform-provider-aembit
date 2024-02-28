@@ -20,6 +20,10 @@ func TestAccAgentControllerResource_WithTrustProvider(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "name", "TF Acceptance Azure Trust Provider"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_agent_controller.azure_tp", "id"),
 					// Verify placeholder ID is set
@@ -38,6 +42,10 @@ func TestAccAgentControllerResource_WithTrustProvider(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "name", "TF Acceptance Azure Trust Provider - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
