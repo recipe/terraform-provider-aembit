@@ -31,8 +31,8 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Bearer"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.method", "HTTP Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Bearer"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
@@ -59,9 +59,9 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.day", "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost2.com"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Header"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.config", "X-Vault-Token"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.method", "HTTP Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Header"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.config", "X-Vault-Token"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

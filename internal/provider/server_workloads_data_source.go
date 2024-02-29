@@ -130,7 +130,7 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
-								"workload_service_authentication": schema.SingleNestedAttribute{
+								"authentication_config": schema.SingleNestedAttribute{
 									Description: "Service authentication details.",
 									Computed:    true,
 									Optional:    true,

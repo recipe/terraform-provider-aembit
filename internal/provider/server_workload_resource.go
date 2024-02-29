@@ -131,7 +131,7 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Computed:    true,
 					},
-					"workload_service_authentication": schema.SingleNestedAttribute{
+					"authentication_config": schema.SingleNestedAttribute{
 						Description: "Service authentication details.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
