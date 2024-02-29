@@ -13,7 +13,6 @@ type clientWorkloadResourceModel struct {
 	Description types.String `tfsdk:"description"`
 	IsActive    types.Bool   `tfsdk:"is_active"`
 	Identities  types.Set    `tfsdk:"identities"`
-	Type        types.String `tfsdk:"type"`
 	Tags        types.Map    `tfsdk:"tags"`
 }
 

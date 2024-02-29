@@ -59,25 +59,21 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the server workload.",
+				Description: "Unique identifier of the Server Workload.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the server workload.",
+				Description: "Name for the Server Workload.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the server workload.",
+				Description: "Description for the Server Workload.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the server workload.",
+				Description: "Active status of the Server Workload.",
 				Optional:    true,
-				Computed:    true,
-			},
-			"type": schema.StringAttribute{
-				Description: "Type of server workload.",
 				Computed:    true,
 			},
 			"service_endpoint": schema.SingleNestedAttribute{
@@ -85,7 +81,7 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"external_id": schema.StringAttribute{
-						Description: "Alphanumeric identifier of the service endpoint.",
+						Description: "Unique identifier of the service endpoint.",
 						Computed:    true,
 					},
 					"id": schema.Int64Attribute{
@@ -93,36 +89,42 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Computed:    true,
 					},
 					"host": schema.StringAttribute{
-						Description: "hostname of the service endpoint.",
+						Description: "Hostname of the Server Workload service endpoint.",
 						Required:    true,
 					},
 					"port": schema.Int64Attribute{
-						Description: "port of the service endpoint.",
+						Description: "Port of the Server Workload service endpoint.",
 						Required:    true,
 					},
 					"app_protocol": schema.StringAttribute{
-						Description: "protocol of the service endpoint.",
-						Required:    true,
+						Description: "Application Protocol of the Server Workload service endpoint. Possible values are: \n" +
+							"\t* `Amazon Redshift`\n" +
+							"\t* `HTTP`\n" +
+							"\t* `MySQL`\n" +
+							"\t* `PostgreSQL`\n" +
+							"\t* `Redis`\n" +
+							"\t* `Snowflake`\n",
+						Required: true,
 					},
 					"requested_port": schema.Int64Attribute{
-						Description: "requested port of the service endpoint.",
+						Description: "Requested port of the Server Workload service endpoint.",
 						Required:    true,
 					},
 					"tls_verification": schema.StringAttribute{
-						Description: "tls verification of the service endpoint.",
+						Description: "TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.",
 						Required:    true,
 					},
 					"transport_protocol": schema.StringAttribute{
-						Description: "transport protocol of the service endpoint.",
+						Description: "Transport protocol of the Server Workload service endpoint. This value must be set to the default `TCP`.",
 						Required:    true,
 					},
 					"requested_tls": schema.BoolAttribute{
-						Description: "tls requested on the service endpoint.",
+						Description: "TLS requested on the Server Workload service endpoint.",
 						Optional:    true,
 						Computed:    true,
 					},
 					"tls": schema.BoolAttribute{
-						Description: "tls indicated on the service endpoint.",
+						Description: "TLS indicated on the Server Workload service endpoint.",
 						Optional:    true,
 						Computed:    true,
 					},
@@ -131,15 +133,31 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"method": schema.StringAttribute{
-								Description: "Service authentication method.",
-								Required:    true,
+								Description: "Server Workload Service authentication method. Possible values are: \n" +
+									"\t* `API Key`\n" +
+									"\t* `HTTP Authentication`\n" +
+									"\t* `JWT Token Authentication`\n" +
+									"\t* `Password Authentication`\n",
+								Required: true,
 							},
 							"scheme": schema.StringAttribute{
-								Description: "Service authentication scheme.",
-								Required:    true,
+								Description: "Server Workload Service authentication scheme. Possible values are: \n" +
+									"\t* For Authentation Method `API Key`:\n" +
+									"\t\t* `Header`\n" +
+									"\t\t* `Query Parameter`\n" +
+									"\t* For Authentation Method `HTTP Authentication`:\n" +
+									"\t\t* `Basic`\n" +
+									"\t\t* `Bearer`\n" +
+									"\t\t* `Header`\n" +
+									"\t\t* `AWS Signature v4`\n" +
+									"\t* For Authentation Method `JWT Token Authentication`:\n" +
+									"\t\t* `Snowflake JWT`\n" +
+									"\t* For Authentation Method `Password Authentication`:\n" +
+									"\t\t* `Password`\n",
+								Required: true,
 							},
 							"config": schema.StringAttribute{
-								Description: "Service authentication config.",
+								Description: "Server Workload Service authentication config. This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme.",
 								Optional:    true,
 								Computed:    true,
 							},
@@ -338,7 +356,6 @@ func convertServerWorkloadDTOToModel(dto aembit.ServerWorkloadExternalDTO) serve
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Type = types.StringValue(dto.Type)
 
 	model.ServiceEndpoint = &serviceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),

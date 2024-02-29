@@ -17,24 +17,41 @@ description: |-
 
 ### Required
 
-- `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--identities))
-- `name` (String) User-provided name of the client workload.
+- `identities` (Attributes Set) Set of Client Workload identities. (see [below for nested schema](#nestedatt--identities))
+- `name` (String) Name for the Client Workload.
 
 ### Optional
 
-- `description` (String) User-provided description of the client workload.
-- `is_active` (Boolean) Active/Inactive status of the client workload.
+- `description` (String) Description for the Client Workload.
+- `is_active` (Boolean) Active status of the Client Workload.
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the client workload.
-- `type` (String) Type of client workload.
+- `id` (String) Unique identifier of the Client Workload.
 
 <a id="nestedatt--identities"></a>
 ### Nested Schema for `identities`
 
 Required:
 
-- `type` (String) Client identity type.
+- `type` (String) Client identity type. Possible values are: 
+	* `aembitClientId`
+	* `awsEcsServiceName`
+	* `awsEcsTaskFamily`
+	* `gcpIdentityToken`
+	* `githubIdTokenSubject`
+	* `githubIdTokenRepository`
+	* `hostname`
+	* `k8sNamespace`
+	* `k8sPodNamePrefix`
+	* `k8sPodName`
+	* `k8sServiceAccountName`
+	* `k8sServiceAccountUID`
+	* `processName`
+	* `processUserName`
+	* `sourceIPAddress`
+	* `terraformIdTokenOrganizationId`
+	* `terraformIdTokenProjectId`
+	* `terraformIdTokenWorkspaceId`
 - `value` (String) Client identity value.

@@ -17,26 +17,26 @@ description: |-
 
 ### Required
 
-- `name` (String) User-provided name of the credential provider.
+- `name` (String) Name for the Credential Provider.
 
 ### Optional
 
-- `api_key` (Attributes) (see [below for nested schema](#nestedatt--api_key))
-- `description` (String) User-provided description of the credential provider.
-- `is_active` (Boolean) Active/Inactive status of the credential provider.
-- `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--oauth_client_credentials))
-- `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--vault_client_token))
+- `api_key` (Attributes) API Key type Credential Provider configuration. (see [below for nested schema](#nestedatt--api_key))
+- `description` (String) Description for the Credential Provider.
+- `is_active` (Boolean) Active status of the Credential Provider.
+- `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
+- `vault_client_token` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--vault_client_token))
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the credential provider.
+- `id` (String) Unique identifier of the Credential Provider.
 
 <a id="nestedatt--api_key"></a>
 ### Nested Schema for `api_key`
 
 Optional:
 
-- `api_key` (String, Sensitive)
+- `api_key` (String, Sensitive) API Key secret of the Credential Provider.
 
 
 <a id="nestedatt--oauth_client_credentials"></a>
@@ -44,13 +44,13 @@ Optional:
 
 Required:
 
-- `client_id` (String)
-- `token_url` (String)
+- `client_id` (String) Client ID for the OAuth Credential Provider.
+- `token_url` (String) Token URL for the OAuth Credential Provider.
 
 Optional:
 
-- `client_secret` (String, Sensitive)
-- `scopes` (String)
+- `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
+- `scopes` (String) Scopes for the OAuth Credential Provider.
 
 
 <a id="nestedatt--vault_client_token"></a>
@@ -58,26 +58,26 @@ Optional:
 
 Required:
 
-- `lifetime` (Number)
-- `subject` (String)
-- `subject_type` (String)
-- `vault_host` (String)
-- `vault_path` (String)
-- `vault_port` (Number)
-- `vault_tls` (Boolean)
+- `lifetime` (Number) Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
+- `subject` (String) Subject of the JWT Token used to authenticate to the Vault Cluster.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+- `vault_host` (String) Hostname of the Vault Cluster to be used for executing the login API.
+- `vault_path` (String) Path to utilize when executing the login API on the Vault Cluster.
+- `vault_port` (Number) Port of the Vault Cluster to be used for executing the login API.
+- `vault_tls` (Boolean) Configuration to utilize TLS for connectivity to the Vault Cluster.
 
 Optional:
 
-- `custom_claims` (Attributes Set) (see [below for nested schema](#nestedatt--vault_client_token--custom_claims))
-- `vault_forwarding` (String)
-- `vault_namespace` (String)
-- `vault_role` (String)
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster. (see [below for nested schema](#nestedatt--vault_client_token--custom_claims))
+- `vault_forwarding` (String) If Vault Forwarding is required, this configuration can be set to `unconditional` or `conditional`.
+- `vault_namespace` (String) Namespace to utilize when executing the login API on the Vault Cluster.
+- `vault_role` (String) Role to utilize when executing the login API on the Vault Cluster.
 
 <a id="nestedatt--vault_client_token--custom_claims"></a>
 ### Nested Schema for `vault_client_token.custom_claims`
 
 Required:
 
-- `key` (String)
-- `value` (String)
-- `value_type` (String)
+- `key` (String) Key for the JWT Token Custom Claim.
+- `value` (String) Value for the JWT Token Custom Claim.
+- `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.

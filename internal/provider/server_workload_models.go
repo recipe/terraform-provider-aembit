@@ -10,7 +10,6 @@ type serverWorkloadResourceModel struct {
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
 	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
-	Type            types.String          `tfsdk:"type"`
 }
 
 // serverWorkloadDataSourceModel maps the datasource schema.

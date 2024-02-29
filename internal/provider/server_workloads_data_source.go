@@ -77,10 +77,6 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Active/Inactive status of the server workload.",
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "Type of server workload.",
-							Computed:    true,
-						},
 						//"tags": schema.ListNestedAttribute{
 						//	Description: "List of Tags.",
 						//	Computed:    true,
@@ -189,7 +185,6 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Name:        types.StringValue(serverWorkload.EntityDTO.Name),
 			Description: types.StringValue(serverWorkload.EntityDTO.Description),
 			IsActive:    types.BoolValue(serverWorkload.EntityDTO.IsActive),
-			Type:        types.StringValue(serverWorkload.Type),
 		}
 
 		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{

@@ -44,10 +44,9 @@ func New(version string) func() provider.Provider {
 
 // aembitProviderModel maps provider schema data to a Go type.
 type aembitProviderModel struct {
-	Tenant      types.String `tfsdk:"tenant"`
-	Token       types.String `tfsdk:"token"`
-	StackDomain types.String `tfsdk:"stack_domain"`
-	ClientID    types.String `tfsdk:"client_id"`
+	Tenant   types.String `tfsdk:"tenant"`
+	Token    types.String `tfsdk:"token"`
+	ClientID types.String `tfsdk:"client_id"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -69,7 +68,7 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"tenant": schema.StringAttribute{
-				Description: "Tenant ID of the specific Aembit Cloud instance",
+				Description: "Tenant ID of the specific Aembit Cloud instance.",
 				Optional:    true,
 			},
 			"client_id": schema.StringAttribute{
@@ -77,13 +76,9 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Optional:    true,
 			},
 			"token": schema.StringAttribute{
-				Description: "Access Token to use for authentication to the Aembit Cloud Tenant instance",
+				Description: "Access Token to use for authentication to the Aembit Cloud Tenant instance.",
 				Optional:    true,
 				Sensitive:   true,
-			},
-			"stack_domain": schema.StringAttribute{
-				Description: "For development purposes only",
-				Optional:    true,
 			},
 		},
 	}
@@ -100,7 +95,7 @@ func (p *aembitProvider) ConfigValidators(_ context.Context) []resource.ConfigVa
 }
 
 func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	tflog.Info(ctx, "Configuring Aembit client")
+	tflog.Info(ctx, "Configuring Aembit client...")
 
 	// Retrieve provider data from configuration
 	var config aembitProviderModel
@@ -130,15 +125,6 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
-	if config.StackDomain.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("stack_domain"),
-			"Unknown Aembit API Stack Domain",
-			"The provider cannot create the Aembit API client as there is an unknown configuration value for the Aembit API Stack Domain. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the AEMBIT_STACK_DOMAIN environment variable.",
-		)
-	}
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -148,17 +134,15 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tenant := os.Getenv("AEMBIT_TENANT_ID")
 	token := os.Getenv("AEMBIT_TOKEN")
 	stackDomain := os.Getenv("AEMBIT_STACK_DOMAIN")
+	if len(stackDomain) == 0 {
+		stackDomain = "useast2.aembit.io"
+	}
 
 	if !config.Tenant.IsNull() {
 		tenant = config.Tenant.ValueString()
 	}
-
 	if !config.Token.IsNull() {
 		token = config.Token.ValueString()
-	}
-
-	if !config.StackDomain.IsNull() {
-		stackDomain = config.StackDomain.ValueString()
 	}
 
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
@@ -201,16 +185,6 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			"Missing Aembit API Access Token",
 			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API Access Token. "+
 				"Set the password value in the configuration or use the AEMBIT_TOKEN environment variable. "+
-				"If either is already set, ensure the value is not empty.",
-		)
-	}
-
-	if stackDomain == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("stack_domain"),
-			"Missing Aembit API Stack Domain",
-			"The provider cannot create the Aembit API client as there is a missing or empty value for the Aembit API Stack Domain. "+
-				"Set the password value in the configuration or use the AEMBIT_STACK_DOMAIN environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}

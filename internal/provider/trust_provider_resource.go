@@ -61,20 +61,20 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the trust provider.",
+				Description: "Unique identifier of the Trust Provider.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the trust provider.",
+				Description: "Name for the Trust Provider.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the trust provider.",
+				Description: "Description for the Trust Provider.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the trust provider.",
+				Description: "Active status of the Trust Provider.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -82,10 +82,17 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Azure Metadata type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"sku":   schema.StringAttribute{Optional: true},
-					"vm_id": schema.StringAttribute{Optional: true},
+					"sku": schema.StringAttribute{
+						Description: "Specific SKU for the Virtual Machine image.",
+						Optional:    true,
+					},
+					"vm_id": schema.StringAttribute{
+						Description: "Unique identifier for the Virtual Machine.",
+						Optional:    true,
+					},
 					"subscription_id": schema.StringAttribute{
-						Optional: true,
+						Description: "Azure subscription for the Virtual Machine.",
+						Optional:    true,
 						//Validators: []validator.String{
 						//	// Validate azure_metadata has at least one value
 						//	stringvalidator.AtLeastOneOf(path.Expressions{
@@ -101,40 +108,94 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"certificate": schema.StringAttribute{
+						Description: "PEM Certificate to be used for Signature verification.",
 						Optional:    true,
-						Description: "PEM Certificate to be used for Signature verification",
 					},
-					"account_id":                schema.StringAttribute{Optional: true},
-					"architecture":              schema.StringAttribute{Optional: true},
-					"availability_zone":         schema.StringAttribute{Optional: true},
-					"billing_products":          schema.StringAttribute{Optional: true},
-					"image_id":                  schema.StringAttribute{Optional: true},
-					"instance_id":               schema.StringAttribute{Optional: true},
-					"instance_type":             schema.StringAttribute{Optional: true},
-					"kernel_id":                 schema.StringAttribute{Optional: true},
-					"marketplace_product_codes": schema.StringAttribute{Optional: true},
-					"pending_time":              schema.StringAttribute{Optional: true},
-					"private_ip":                schema.StringAttribute{Optional: true},
-					"ramdisk_id":                schema.StringAttribute{Optional: true},
-					"region":                    schema.StringAttribute{Optional: true},
-					"version":                   schema.StringAttribute{Optional: true},
+					"account_id": schema.StringAttribute{
+						Description: "The ID of the AWS account that launched the instance.",
+						Optional:    true,
+					},
+					"architecture": schema.StringAttribute{
+						Description: "The architecture of the AMI used to launch the instance (i386 | x86_64 | arm64).",
+						Optional:    true,
+					},
+					"availability_zone": schema.StringAttribute{
+						Description: "The Availability Zone in which the instance is running.",
+						Optional:    true,
+					},
+					"billing_products": schema.StringAttribute{
+						Description: "The billing products of the instance.",
+						Optional:    true,
+					},
+					"image_id": schema.StringAttribute{
+						Description: "The ID of the AMI used to launch the instance.",
+						Optional:    true,
+					},
+					"instance_id": schema.StringAttribute{
+						Description: "The ID of the instance.",
+						Optional:    true,
+					},
+					"instance_type": schema.StringAttribute{
+						Description: "The instance type of the instance.",
+						Optional:    true,
+					},
+					"kernel_id": schema.StringAttribute{
+						Description: "The ID of the kernel associated with the instance, if applicable.",
+						Optional:    true,
+					},
+					"marketplace_product_codes": schema.StringAttribute{
+						Description: "The AWS Marketplace product code of the AMI used to launch the instance.",
+						Optional:    true,
+					},
+					"pending_time": schema.StringAttribute{
+						Description: "The date and time that the instance was launched.",
+						Optional:    true,
+					},
+					"private_ip": schema.StringAttribute{
+						Description: "The private IPv4 address of the instance.",
+						Optional:    true,
+					},
+					"ramdisk_id": schema.StringAttribute{
+						Description: "The ID of the RAM disk associated with the instance, if applicable.",
+						Optional:    true,
+					},
+					"region": schema.StringAttribute{
+						Description: "The Region in which the instance is running.",
+						Optional:    true,
+					},
+					"version": schema.StringAttribute{
+						Description: "The version of the instance identity document format.",
+						Optional:    true,
+					},
 				},
 			},
 			"kerberos": schema.SingleNestedAttribute{
 				Description: "Kerberos type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"agent_controller_id": schema.StringAttribute{Optional: true},
-					"principal":           schema.StringAttribute{Optional: true},
-					"realm":               schema.StringAttribute{Optional: true},
-					"source_ip":           schema.StringAttribute{Optional: true},
+					"agent_controller_id": schema.StringAttribute{
+						Description: "Unique identifier for the Aembit Agent Controller to use for Signature verification.",
+						Optional:    true,
+					},
+					"principal": schema.StringAttribute{
+						Description: "The Kerberos Principal of the authenticated Agent Proxy.",
+						Optional:    true,
+					},
+					"realm": schema.StringAttribute{
+						Description: "The Kerberos Realm of the authenticated Agent Proxy.",
+						Optional:    true,
+					},
+					"source_ip": schema.StringAttribute{
+						Description: "The Source IP Address of the authenticated Agent Proxy.",
+						Optional:    true,
+					},
 				},
 			},
 		},
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified.
+// Configure validators to ensure that only one Trust Provider type is specified.
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -162,8 +223,8 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating trust provider",
-			"Could not create trust provider, unexpected error: "+err.Error(),
+			"Error creating Trust Provider",
+			"Could not create Trust Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -237,8 +298,8 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating trust provider",
-			"Could not update trust provider, unexpected error: "+err.Error(),
+			"Error updating Trust Provider",
+			"Could not update Trust Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -278,7 +339,7 @@ func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Trust Provider",
-			"Could not delete trust provider, unexpected error: "+err.Error(),
+			"Could not delete Trust Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}

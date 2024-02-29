@@ -77,10 +77,6 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Active/Inactive status of the client workload.",
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "Type of client workload.",
-							Computed:    true,
-						},
 						"identities": schema.SetNestedAttribute{
 							Description: "Set of client workload identities.",
 							Computed:    true,
@@ -129,7 +125,6 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 			Name:        types.StringValue(client_workload.EntityDTO.Name),
 			Description: types.StringValue(client_workload.EntityDTO.Description),
 			IsActive:    types.BoolValue(client_workload.EntityDTO.IsActive),
-			Type:        types.StringValue(client_workload.Type),
 		}
 		clientWorkloadState.Identities = newClientWorkloadIdentityModel(ctx, client_workload.Identities)
 		clientWorkloadState.Tags = newTagsModel(ctx, client_workload.Tags)

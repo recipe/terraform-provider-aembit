@@ -29,7 +29,7 @@ description: |-
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the Access Condition.
+- `id` (String) Unique identifier of the Access Condition.
 
 <a id="nestedatt--crowdstrike_conditions"></a>
 ### Nested Schema for `crowdstrike_conditions`

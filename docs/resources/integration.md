@@ -17,30 +17,30 @@ description: |-
 
 ### Required
 
-- `endpoint` (String) Endpoint to be used for performing the integration.
-- `name` (String) User-provided name of the integration.
-- `oauth_client_credentials` (Attributes) OAuth Client Credentials authentication information for the integration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
-- `sync_frequency` (Number) Frequency to be used for synchronizing the integration.
-- `type` (String) Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).
+- `endpoint` (String) Endpoint to be used for performing the Integration.
+- `name` (String) Name for the Integration.
+- `oauth_client_credentials` (Attributes) OAuth Client Credentials authentication information for the Integration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
+- `sync_frequency` (Number) Frequency to be used for synchronizing the Integration.
+- `type` (String) Type of Aembit Integration. Possible values are: `WizIntegrationApi` or `CrowdStrike`.
 
 ### Optional
 
-- `description` (String) User-provided description of the integration.
-- `is_active` (Boolean) Active/Inactive status of the integration.
+- `description` (String) Description for the Integration.
+- `is_active` (Boolean) Active status of the Integration.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the integration.
+- `id` (String) Unique identifier of the Integration.
 
 <a id="nestedatt--oauth_client_credentials"></a>
 ### Nested Schema for `oauth_client_credentials`
 
 Required:
 
-- `client_id` (String)
-- `client_secret` (String, Sensitive)
-- `token_url` (String)
+- `client_id` (String) Client ID for the OAuth Endpoint of the Integration.
+- `client_secret` (String, Sensitive) Client Secret for the OAuth Endpoint of the Integration.
+- `token_url` (String) Token URL for the OAuth Endpoint of the Integration.
 
 Optional:
 
-- `audience` (String)
+- `audience` (String) Audience for the OAuth Endpoint of the Integration.

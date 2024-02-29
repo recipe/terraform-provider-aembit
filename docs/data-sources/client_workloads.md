@@ -33,7 +33,6 @@ Read-Only:
 - `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--client_workloads--identities))
 - `is_active` (Boolean) Active/Inactive status of the client workload.
 - `name` (String) User-provided name of the client workload.
-- `type` (String) Type of client workload.
 
 <a id="nestedatt--client_workloads--identities"></a>
 ### Nested Schema for `client_workloads.identities`

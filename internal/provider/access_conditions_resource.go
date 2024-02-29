@@ -60,7 +60,7 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the Access Condition.",
+				Description: "Unique identifier of the Access Condition.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
@@ -103,7 +103,7 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified.
+// Configure validators to ensure that only one Access Condition type is specified.
 func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
