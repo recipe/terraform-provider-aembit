@@ -224,7 +224,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = ConvertIntegrationDTOToModel(ctx, *integration, state)
+	state = ConvertIntegrationDTOToModel(ctx, *integration, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
