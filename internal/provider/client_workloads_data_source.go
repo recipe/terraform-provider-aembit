@@ -109,7 +109,7 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state clientWorkloadsDataSourceModel
 
-	client_workloads, err := d.client.GetClientWorkloads(nil)
+	clientWorkloads, err := d.client.GetClientWorkloads(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Trust Providers",
@@ -119,16 +119,8 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	// Map response body to model
-	for _, client_workload := range client_workloads {
-		clientWorkloadState := clientWorkloadResourceModel{
-			ID:          types.StringValue(client_workload.EntityDTO.ExternalID),
-			Name:        types.StringValue(client_workload.EntityDTO.Name),
-			Description: types.StringValue(client_workload.EntityDTO.Description),
-			IsActive:    types.BoolValue(client_workload.EntityDTO.IsActive),
-		}
-		clientWorkloadState.Identities = newClientWorkloadIdentityModel(ctx, client_workload.Identities)
-		clientWorkloadState.Tags = newTagsModel(ctx, client_workload.Tags)
-
+	for _, clientWorkload := range clientWorkloads {
+		clientWorkloadState := convertClientWorkloadDTOToModel(ctx, clientWorkload)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}
 

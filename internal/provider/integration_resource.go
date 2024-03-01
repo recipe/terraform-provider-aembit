@@ -78,6 +78,11 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"type": schema.StringAttribute{
 				Description: "Type of Aembit Integration. Possible values are: `WizIntegrationApi` or `CrowdStrike`.",
 				Required:    true,
@@ -131,7 +136,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(plan, nil)
+	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, nil)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegration(dto, nil)
@@ -144,7 +149,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIntegrationDTOToModel(*integration, plan)
+	plan = convertIntegrationDTOToModel(ctx, *integration, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -174,7 +179,7 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state = convertIntegrationDTOToModel(integration, state)
+	state = convertIntegrationDTOToModel(ctx, integration, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -206,7 +211,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(plan, &externalID)
+	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, &externalID)
 
 	// Update Integration
 	integration, err := r.client.UpdateIntegration(dto, nil)
@@ -218,8 +223,8 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// Map response body to schema and populate Computed attribute values.
-	state = convertIntegrationDTOToModel(*integration, plan)
+	// Map response body to schema and populate Computed attribute values
+	state = convertIntegrationDTOToModel(ctx, *integration, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -265,13 +270,25 @@ func (r *integrationResource) ImportState(ctx context.Context, req resource.Impo
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIntegrationModelToDTO(model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
+func convertIntegrationModelToDTO(ctx context.Context, model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
 	var integration aembit.IntegrationDTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			integration.Tags = append(integration.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
+	}
+
 	if externalID != nil {
 		integration.EntityDTO.ExternalID = *externalID
 	}
@@ -289,12 +306,13 @@ func convertIntegrationModelToDTO(model integrationResourceModel, externalID *st
 	return integration
 }
 
-func convertIntegrationDTOToModel(dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
+func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
 	var model integrationResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)

@@ -58,6 +58,10 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
 					resource.TestCheckResourceAttr("aembit_access_condition.crowdstrike", "name", "TF Acceptance Crowdstrike"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_access_condition.crowdstrike", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_access_condition.crowdstrike", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_access_condition.crowdstrike", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_access_condition.crowdstrike", "id"),
 					// Verify placeholder ID is set

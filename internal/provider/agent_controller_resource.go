@@ -76,6 +76,11 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"trust_provider_id": schema.StringAttribute{
 				Description: "Unique Trust Provider to use for authentication of the Agent Controller.",
 				Optional:    true,
@@ -95,7 +100,7 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Generate API request body from plan
-	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(plan, nil)
+	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(ctx, plan, nil)
 
 	// Create new Agent Controller
 	agentController, err := r.client.CreateAgentController(controller, nil)
@@ -108,7 +113,7 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAgentControllerDTOToModel(*agentController)
+	plan = convertAgentControllerDTOToModel(ctx, *agentController)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -138,7 +143,7 @@ func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	state = convertAgentControllerDTOToModel(agentController)
+	state = convertAgentControllerDTOToModel(ctx, agentController)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -170,7 +175,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(plan, &externalID)
+	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(ctx, plan, &externalID)
 
 	// Update Agent Controller
 	agentController, err := r.client.UpdateAgentController(controller, nil)
@@ -183,7 +188,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAgentControllerDTOToModel(*agentController)
+	state = convertAgentControllerDTOToModel(ctx, *agentController)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -229,12 +234,23 @@ func (r *agentControllerResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAgentControllerModelToDTO(model agentControllerResourceModel, externalID *string) aembit.AgentControllerDTO {
+func convertAgentControllerModelToDTO(ctx context.Context, model agentControllerResourceModel, externalID *string) aembit.AgentControllerDTO {
 	var controller aembit.AgentControllerDTO
 	controller.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
+	}
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			controller.Tags = append(controller.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
 	if externalID != nil {
 		controller.EntityDTO.ExternalID = *externalID
@@ -244,13 +260,14 @@ func convertAgentControllerModelToDTO(model agentControllerResourceModel, extern
 	return controller
 }
 
-func convertAgentControllerDTOToModel(dto aembit.AgentControllerDTO) agentControllerResourceModel {
+func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) agentControllerResourceModel {
 	var model agentControllerResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.TrustProviderID = types.StringValue(dto.TrustProviderID)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	return model
 }

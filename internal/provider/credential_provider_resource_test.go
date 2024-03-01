@@ -96,6 +96,10 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.color", "blue"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
 					// Verify placeholder ID is set
@@ -114,6 +118,10 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.%", "2"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.color", "orange"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

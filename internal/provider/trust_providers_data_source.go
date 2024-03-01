@@ -77,6 +77,62 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Active/Inactive status of the trust provider.",
 							Computed:    true,
 						},
+						"tags": schema.MapAttribute{
+							ElementType: types.StringType,
+							Computed:    true,
+						},
+						"azure_metadata": schema.SingleNestedAttribute{
+							Description: "Azure Metadata type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"sku":   schema.StringAttribute{Computed: true},
+								"vm_id": schema.StringAttribute{Computed: true},
+								"subscription_id": schema.StringAttribute{
+									Computed: true,
+									//Validators: []validator.String{
+									//	// Validate azure_metadata has at least one value
+									//	stringvalidator.AtLeastOneOf(path.Expressions{
+									//		path.MatchRelative().AtParent().AtName("sku"),
+									//		path.MatchRelative().AtParent().AtName("vm_id"),
+									//	}...),
+									//},
+								},
+							},
+						},
+						"aws_metadata": schema.SingleNestedAttribute{
+							Description: "AWS Metadata type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"certificate": schema.StringAttribute{
+									Computed:    true,
+									Description: "PEM Certificate to be used for Signature verification",
+								},
+								"account_id":                schema.StringAttribute{Computed: true},
+								"architecture":              schema.StringAttribute{Computed: true},
+								"availability_zone":         schema.StringAttribute{Computed: true},
+								"billing_products":          schema.StringAttribute{Computed: true},
+								"image_id":                  schema.StringAttribute{Computed: true},
+								"instance_id":               schema.StringAttribute{Computed: true},
+								"instance_type":             schema.StringAttribute{Computed: true},
+								"kernel_id":                 schema.StringAttribute{Computed: true},
+								"marketplace_product_codes": schema.StringAttribute{Computed: true},
+								"pending_time":              schema.StringAttribute{Computed: true},
+								"private_ip":                schema.StringAttribute{Computed: true},
+								"ramdisk_id":                schema.StringAttribute{Computed: true},
+								"region":                    schema.StringAttribute{Computed: true},
+								"version":                   schema.StringAttribute{Computed: true},
+							},
+						},
+						"kerberos": schema.SingleNestedAttribute{
+							Description: "Kerberos type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"agent_controller_id": schema.StringAttribute{Computed: true},
+								"principal":           schema.StringAttribute{Computed: true},
+								"realm":               schema.StringAttribute{Computed: true},
+								"source_ip":           schema.StringAttribute{Computed: true},
+							},
+						},
 					},
 				},
 			},
@@ -99,12 +155,7 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
-		trustProviderState := trustProviderResourceModel{
-			ID:          types.StringValue(trustProvider.EntityDTO.ExternalID),
-			Name:        types.StringValue(trustProvider.EntityDTO.Name),
-			Description: types.StringValue(trustProvider.EntityDTO.Description),
-			IsActive:    types.BoolValue(trustProvider.EntityDTO.IsActive),
-		}
+		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

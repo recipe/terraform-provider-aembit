@@ -24,6 +24,7 @@ description: |-
 
 - `description` (String) Description for the Server Workload.
 - `is_active` (Boolean) Active status of the Server Workload.
+- `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
@@ -49,17 +50,17 @@ Required:
 
 Optional:
 
+- `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
 - `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
 - `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
-- `workload_service_authentication` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--workload_service_authentication))
 
 Read-Only:
 
 - `external_id` (String) Unique identifier of the service endpoint.
 - `id` (Number) Number identifier of the service endpoint.
 
-<a id="nestedatt--service_endpoint--workload_service_authentication"></a>
-### Nested Schema for `service_endpoint.workload_service_authentication`
+<a id="nestedatt--service_endpoint--authentication_config"></a>
+### Nested Schema for `service_endpoint.authentication_config`
 
 Required:
 

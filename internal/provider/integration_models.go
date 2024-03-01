@@ -11,6 +11,7 @@ type integrationResourceModel struct {
 	Name                   types.String                            `tfsdk:"name"`
 	Description            types.String                            `tfsdk:"description"`
 	IsActive               types.Bool                              `tfsdk:"is_active"`
+	Tags                   types.Map                               `tfsdk:"tags"`
 	Type                   types.String                            `tfsdk:"type"`
 	SyncFrequency          types.Int64                             `tfsdk:"sync_frequency"`
 	Endpoint               types.String                            `tfsdk:"endpoint"`

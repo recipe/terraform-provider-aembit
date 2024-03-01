@@ -24,7 +24,10 @@ Manages access policies.
 
 Read-Only:
 
+- `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
 - `client_workload` (String) Configured client workload of the access policy.
+- `credential_provider` (String) Credential Provider ID configured in the Access Policy.
 - `id` (String) Alphanumeric identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
 - `server_workload` (String) Configured server workload of the access policy.
+- `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.

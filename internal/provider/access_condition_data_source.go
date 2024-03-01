@@ -47,7 +47,7 @@ func (d *accessConditionsDataSource) Configure(_ context.Context, req datasource
 
 // Metadata returns the data source type name.
 func (d *accessConditionsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_accessConditions"
+	resp.TypeName = req.ProviderTypeName + "_access_conditions"
 }
 
 // Schema defines the schema for the resource.
@@ -55,7 +55,7 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 	resp.Schema = schema.Schema{
 		Description: "Manages an accessCondition.",
 		Attributes: map[string]schema.Attribute{
-			"accessConditions": schema.ListNestedAttribute{
+			"access_conditions": schema.ListNestedAttribute{
 				Description: "List of accessConditions.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
@@ -76,6 +76,33 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the accessCondition.",
 							Computed:    true,
+						},
+						"tags": schema.MapAttribute{
+							Description: "Tags are key-value pairs.",
+							ElementType: types.StringType,
+							Computed:    true,
+						},
+						"integration_id": schema.StringAttribute{
+							Description: "ID of the Integration used by the Access Condition.",
+							Computed:    true,
+						},
+						"wiz_conditions": schema.SingleNestedAttribute{
+							Description: "Wiz Specific rules for the Access Condition.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"max_last_seen":               schema.Int64Attribute{Required: true},
+								"container_cluster_connected": schema.BoolAttribute{Required: true},
+							},
+						},
+						"crowdstrike_conditions": schema.SingleNestedAttribute{
+							Description: "CrowdStrike Specific rules for the Access Condition.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"max_last_seen":       schema.Int64Attribute{Required: true},
+								"match_hostname":      schema.BoolAttribute{Required: true},
+								"match_serial_number": schema.BoolAttribute{Required: true},
+								"prevent_rfm":         schema.BoolAttribute{Required: true},
+							},
 						},
 					},
 				},
@@ -99,12 +126,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := accessConditionResourceModel{
-			ID:          types.StringValue(accessCondition.EntityDTO.ExternalID),
-			Name:        types.StringValue(accessCondition.EntityDTO.Name),
-			Description: types.StringValue(accessCondition.EntityDTO.Description),
-			IsActive:    types.BoolValue(accessCondition.EntityDTO.IsActive),
-		}
+		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

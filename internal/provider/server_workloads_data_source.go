@@ -77,22 +77,11 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Active/Inactive status of the server workload.",
 							Computed:    true,
 						},
-						//"tags": schema.ListNestedAttribute{
-						//	Description: "List of Tags.",
-						//	Computed:    true,
-						//	NestedObject: schema.NestedAttributeObject{
-						//		Attributes: map[string]schema.Attribute{
-						//			"key": schema.StringAttribute{
-						//				Description: "Tag key.",
-						//				Computed:    true,
-						//			},
-						//			"value": schema.StringAttribute{
-						//				Description: "Tag value.",
-						//				Computed:    true,
-						//			},
-						//		},
-						//	},
-						//},
+						"tags": schema.MapAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Computed:    true,
+						},
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,
@@ -137,7 +126,7 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
-								"workload_service_authentication": schema.SingleNestedAttribute{
+								"authentication_config": schema.SingleNestedAttribute{
 									Description: "Service authentication details.",
 									Computed:    true,
 									Optional:    true,
@@ -180,26 +169,7 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
-		serverWorkloadState := serverWorkloadResourceModel{
-			ID:          types.StringValue(serverWorkload.EntityDTO.ExternalID),
-			Name:        types.StringValue(serverWorkload.EntityDTO.Name),
-			Description: types.StringValue(serverWorkload.EntityDTO.Description),
-			IsActive:    types.BoolValue(serverWorkload.EntityDTO.IsActive),
-		}
-
-		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
-			ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
-			ID:                types.Int64Value(int64(serverWorkload.ServiceEndpoint.ID)),
-			Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
-			AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
-			TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
-			RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
-			RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
-			Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
-			TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
-			TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
-		}
-
+		serverWorkloadState := convertServerWorkloadDTOToModel(ctx, serverWorkload)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}
 

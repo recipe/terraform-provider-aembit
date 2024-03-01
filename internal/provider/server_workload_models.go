@@ -9,6 +9,7 @@ type serverWorkloadResourceModel struct {
 	Name            types.String          `tfsdk:"name"`
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
+	Tags            types.Map             `tfsdk:"tags"`
 	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
 }
 
@@ -29,7 +30,7 @@ type serviceEndpointModel struct {
 	Port              types.Int64  `tfsdk:"port"`
 	TLS               types.Bool   `tfsdk:"tls"`
 
-	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
+	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"authentication_config"`
 	TLSVerification               types.String                        `tfsdk:"tls_verification"`
 }
 

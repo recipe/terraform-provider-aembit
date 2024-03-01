@@ -25,6 +25,7 @@ description: |-
 - `description` (String) Description for the Credential Provider.
 - `is_active` (Boolean) Active status of the Credential Provider.
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
+- `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--vault_client_token))
 
 ### Read-Only

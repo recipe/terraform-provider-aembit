@@ -73,6 +73,20 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Configured client workload of the access policy.",
 							Computed:    true,
 						},
+						"trust_providers": schema.SetAttribute{
+							Description: "Set of Trust Providers to enforce on the Access Policy.",
+							Computed:    true,
+							ElementType: types.StringType,
+						},
+						"access_conditions": schema.SetAttribute{
+							Description: "Set of Access Conditions to enforce on the Access Policy.",
+							Computed:    true,
+							ElementType: types.StringType,
+						},
+						"credential_provider": schema.StringAttribute{
+							Description: "Credential Provider ID configured in the Access Policy.",
+							Computed:    true,
+						},
 						"server_workload": schema.StringAttribute{
 							Description: "Configured server workload of the access policy.",
 							Computed:    true,
@@ -99,12 +113,7 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, accessPolicy := range accessPolicies {
-		accessPolicyState := accessPolicyResourceModel{
-			ID:             types.StringValue(accessPolicy.EntityDTO.ExternalID),
-			IsActive:       types.BoolValue(accessPolicy.EntityDTO.IsActive),
-			ClientWorkload: types.StringValue(accessPolicy.ClientWorkload.ExternalID),
-			ServerWorkload: types.StringValue(accessPolicy.ServerWorkload.ExternalID),
-		}
+		accessPolicyState := convertAccessPolicyExternalDTOToModel(accessPolicy)
 		state.AccessPolicies = append(state.AccessPolicies, accessPolicyState)
 	}
 

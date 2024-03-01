@@ -10,10 +10,14 @@ resource "aembit_server_workload" "test" {
 		transport_protocol = "TCP"
 		requested_port = 80
 		tls_verification = "full"
-		workload_service_authentication = {
+		authentication_config = {
 			"method" = "HTTP Authentication"
 			"scheme" = "Bearer"
 		}
 	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
 }
 

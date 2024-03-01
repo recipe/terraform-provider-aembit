@@ -77,6 +77,11 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.MapAttribute{
+				Description: "Tags are key-value pairs.",
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"integration_id": schema.StringAttribute{
 				Description: "ID of the Integration used by the Access Condition.",
 				Required:    true,
@@ -258,7 +263,7 @@ func (r *accessConditionResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(_ context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -267,6 +272,18 @@ func convertAccessConditionModelToDTO(_ context.Context, model accessConditionRe
 	}
 	if externalID != nil {
 		accessCondition.EntityDTO.ExternalID = *externalID
+	}
+
+	if len(model.Tags.Elements()) > 0 {
+		tagsMap := make(map[string]string)
+		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			accessCondition.Tags = append(accessCondition.Tags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
 
 	accessCondition.IntegrationID = model.IntegrationID.ValueString()
@@ -284,12 +301,13 @@ func convertAccessConditionModelToDTO(_ context.Context, model accessConditionRe
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(_ context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
+func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
 	var model accessConditionResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	if len(dto.IntegrationID) == 0 {
 		model.IntegrationID = types.StringValue(dto.Integration.ExternalID)

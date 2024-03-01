@@ -55,7 +55,7 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 	resp.Schema = schema.Schema{
 		Description: "Manages an agent controller.",
 		Attributes: map[string]schema.Attribute{
-			"trust_providers": schema.ListNestedAttribute{
+			"agent_controllers": schema.ListNestedAttribute{
 				Description: "List of agent controllers.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
@@ -75,6 +75,11 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 						},
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the agent controller.",
+							Computed:    true,
+						},
+						"tags": schema.MapAttribute{
+							Description: "Tags are key-value pairs.",
+							ElementType: types.StringType,
 							Computed:    true,
 						},
 						"trust_provider_id": schema.BoolAttribute{
@@ -103,13 +108,7 @@ func (d *agentControllersDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, agentController := range agentControllers {
-		agentControllerState := agentControllerResourceModel{
-			ID:              types.StringValue(agentController.EntityDTO.ExternalID),
-			Name:            types.StringValue(agentController.EntityDTO.Name),
-			Description:     types.StringValue(agentController.EntityDTO.Description),
-			IsActive:        types.BoolValue(agentController.EntityDTO.IsActive),
-			TrustProviderID: types.StringValue(agentController.TrustProviderID),
-		}
+		agentControllerState := convertAgentControllerDTOToModel(ctx, agentController)
 		state.AgentControllers = append(state.AgentControllers, agentControllerState)
 	}
 
