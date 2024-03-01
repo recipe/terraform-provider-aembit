@@ -50,9 +50,9 @@ Required:
 
 Optional:
 
+- `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
 - `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
 - `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
-- `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
 
 Read-Only:
 
