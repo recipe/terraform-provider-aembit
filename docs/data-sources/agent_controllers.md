@@ -29,4 +29,4 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the agent controller.
 - `name` (String) User-provided name of the agent controller.
 - `tags` (Map of String) Tags are key-value pairs.
-- `trust_provider_id` (Boolean) Trust Provider to use for authentication of the agent controller.
+- `trust_provider_id` (String) Trust Provider to use for authentication of the agent controller.
