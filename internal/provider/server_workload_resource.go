@@ -294,13 +294,16 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Check if Server Workload is Active
+	// Check if Server Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Server Workload",
-			"Server Workload is active and cannot be deleted. Please mark the workload as inactive first.",
-		)
-		return
+		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Server Workload",
+				"Could not disable Server Workload, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Server Workload

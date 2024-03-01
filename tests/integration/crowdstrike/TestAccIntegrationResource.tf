@@ -3,6 +3,7 @@ provider "aembit" {
 
 resource "aembit_integration" "crowdstrike" {
 	name = "TF Acceptance Crowdstrike"
+	is_active = true
 	type = "CrowdStrike"
 	sync_frequency = 3600
 	endpoint = "https://endpoint"

@@ -54,7 +54,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
 					// Verify active state updated.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "orange"),

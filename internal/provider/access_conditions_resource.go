@@ -64,16 +64,16 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the Access Condition.",
+				Description: "Name for the Access Condition.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the Access Condition.",
+				Description: "Description for the Access Condition.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the Access Condition.",
+				Description: "Active status of the Access Condition.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -83,25 +83,43 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 			},
 			"integration_id": schema.StringAttribute{
-				Description: "ID of the Integration used by the Access Condition.",
+				Description: "Reference to the Integration used for this Access Condition.",
 				Required:    true,
 			},
 			"wiz_conditions": schema.SingleNestedAttribute{
 				Description: "Wiz Specific rules for the Access Condition.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"max_last_seen":               schema.Int64Attribute{Required: true},
-					"container_cluster_connected": schema.BoolAttribute{Required: true},
+					"max_last_seen": schema.Int64Attribute{
+						Description: "The maximum number of seconds since the managed Cluster was last seen by Wiz.",
+						Required:    true,
+					},
+					"container_cluster_connected": schema.BoolAttribute{
+						Description: "The condition requires that managed Clusters be defined as Container Cluster Connected by Wiz.",
+						Required:    true,
+					},
 				},
 			},
 			"crowdstrike_conditions": schema.SingleNestedAttribute{
 				Description: "CrowdStrike Specific rules for the Access Condition.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"max_last_seen":       schema.Int64Attribute{Required: true},
-					"match_hostname":      schema.BoolAttribute{Required: true},
-					"match_serial_number": schema.BoolAttribute{Required: true},
-					"prevent_rfm":         schema.BoolAttribute{Required: true},
+					"max_last_seen": schema.Int64Attribute{
+						Description: "The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.",
+						Required:    true,
+					},
+					"match_hostname": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.",
+						Required:    true,
+					},
+					"match_serial_number": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a system serial number which matches the CrowdStrike identified serial number.",
+						Required:    true,
+					},
+					"prevent_rfm": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.",
+						Required:    true,
+					},
 				},
 			},
 		},
@@ -237,13 +255,16 @@ func (r *accessConditionResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Check if AccessCondition is Active
+	// Check if Access Condition is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Access Condition",
-			"Access Condition is active and cannot be deleted. Please mark the Access Condition as inactive first.",
-		)
-		return
+		_, err := r.client.DisableAccessCondition(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Access Condition",
+				"Could not disable Access Condition, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing AccessCondition

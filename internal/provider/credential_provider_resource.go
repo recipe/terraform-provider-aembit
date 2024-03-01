@@ -317,13 +317,16 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 		return
 	}
 
-	// Check if Credential Provider is Active
+	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Credential Provider",
-			"Credential Provider is active and cannot be deleted. Please mark the credential as inactive first.",
-		)
-		return
+		_, err := r.client.DisableCredentialProvider(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Credential Provider",
+				"Could not disable Credential Provider, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Credential Provider

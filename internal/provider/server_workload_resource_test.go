@@ -20,6 +20,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.color", "blue"),
@@ -29,7 +30,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.port", "443"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.app_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "443"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.method", "HTTP Authentication"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Bearer"),
@@ -52,6 +53,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "tags.color", "orange"),

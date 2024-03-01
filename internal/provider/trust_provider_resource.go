@@ -330,13 +330,16 @@ func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	// Check if Trust Provider is Active
+	// Check if Trust Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Trust Provider",
-			"Trust Provider is active and cannot be deleted. Please mark the trust as inactive first.",
-		)
-		return
+		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Trust Provider",
+				"Could not disable Trust Provider, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Trust Provider

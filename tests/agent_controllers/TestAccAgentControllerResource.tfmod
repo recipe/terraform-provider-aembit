@@ -3,7 +3,7 @@ provider "aembit" {
 
 resource "aembit_agent_controller" "azure_tp" {
 	name = "TF Acceptance Azure Trust Provider - Modified"
-	is_active = false
+	is_active = true
     tags = {
         color = "orange"
         day   = "Tuesday"
@@ -14,6 +14,7 @@ resource "aembit_agent_controller" "azure_tp" {
 
 resource "aembit_trust_provider" "azure" {
 	name = "TF Acceptance Azure"
+	is_active = true
 	azure_metadata = {
 		subscription_id = "subscription_id"
 	}

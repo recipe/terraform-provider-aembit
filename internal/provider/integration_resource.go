@@ -244,13 +244,16 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	// Check if Integration is Active
+	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Integration",
-			"Integration is active and cannot be deleted. Please mark the Integration as inactive first.",
-		)
-		return
+		_, err := r.client.DisableIntegration(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Client Workload",
+				"Could not disable Client Workload, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Integration

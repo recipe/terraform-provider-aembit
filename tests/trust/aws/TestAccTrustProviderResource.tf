@@ -3,6 +3,7 @@ provider "aembit" {
 
 resource "aembit_trust_provider" "aws" {
 	name = "TF Acceptance AWS"
+	is_active = true
 	aws_metadata = {
 		certificate = <<-EOT
 -----BEGIN CERTIFICATE-----

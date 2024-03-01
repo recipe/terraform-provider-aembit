@@ -208,13 +208,16 @@ func (r *agentControllerResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Check if Agent Controller is Active
+	// Check if Agent Controller is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Agent Controller",
-			"Agent Controller is active and cannot be deleted. Please mark the controller as inactive first.",
-		)
-		return
+		_, err := r.client.DisableAgentController(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Agent Controller",
+				"Could not disable Agent Controller, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Agent Controller

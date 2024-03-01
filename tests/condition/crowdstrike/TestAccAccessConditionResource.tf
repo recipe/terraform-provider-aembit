@@ -3,6 +3,7 @@ provider "aembit" {
 
 resource "aembit_integration" "crowdstrike" {
 	name = "TF Acceptance Crowdstrike"
+	is_active = true
 	type = "CrowdStrike"
 	sync_frequency = 3600
 	endpoint = "https://endpoint"
@@ -16,6 +17,7 @@ resource "aembit_integration" "crowdstrike" {
 
 resource "aembit_access_condition" "crowdstrike" {
 	name = "TF Acceptance Crowdstrike"
+	is_active = true
 	integration_id = aembit_integration.crowdstrike.id
 	crowdstrike_conditions = {
 		max_last_seen = 3600

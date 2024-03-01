@@ -239,20 +239,23 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Check if Client Workload is Active
+	// Check if Client Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Client Workload",
-			"Client Workload is active and cannot be deleted. Please mark the workload as inactive first.",
-		)
-		return
+		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Client Workload",
+				"Could not disable Client Workload, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Client Workload
 	_, err := r.client.DeleteClientWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting Client Workload",
+			"Error deleting Client Workload",
 			"Could not delete client workload, unexpected error: "+err.Error(),
 		)
 		return
