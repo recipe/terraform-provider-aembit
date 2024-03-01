@@ -139,7 +139,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIntegrationDTOToModel(ctx, *integration, plan)
+	plan = ConvertIntegrationDTOToModel(ctx, *integration, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -169,7 +169,7 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state = convertIntegrationDTOToModel(ctx, integration, state)
+	state = ConvertIntegrationDTOToModel(ctx, integration, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -214,7 +214,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIntegrationDTOToModel(ctx, *integration, state)
+	state = ConvertIntegrationDTOToModel(ctx, *integration, state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -296,7 +296,7 @@ func convertIntegrationModelToDTO(ctx context.Context, model integrationResource
 	return integration
 }
 
-func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
+func ConvertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
 	var model integrationResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)

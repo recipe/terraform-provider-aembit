@@ -77,6 +77,89 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							Description: "Active/Inactive status of the credential provider.",
 							Computed:    true,
 						},
+						"tags": schema.MapAttribute{
+							Description: "Tags are key-value pairs.",
+							ElementType: types.StringType,
+							Computed:    true,
+						},
+						"api_key": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"api_key": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+							},
+						},
+						"oauth_client_credentials": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_id": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_secret": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+								"scopes": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+						},
+						"vault_client_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"subject": schema.StringAttribute{
+									Computed: true,
+								},
+								"subject_type": schema.StringAttribute{
+									Computed: true,
+								},
+								"custom_claims": schema.SetNestedAttribute{
+									Computed: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+								"lifetime": schema.Int64Attribute{
+									Computed: true,
+								},
+								"vault_host": schema.StringAttribute{
+									Computed: true,
+								},
+								"vault_port": schema.Int64Attribute{
+									Computed: true,
+								},
+								"vault_tls": schema.BoolAttribute{
+									Computed: true,
+								},
+								"vault_namespace": schema.StringAttribute{
+									Computed: true,
+								},
+								"vault_role": schema.StringAttribute{
+									Computed: true,
+								},
+								"vault_path": schema.StringAttribute{
+									Computed: true,
+								},
+								"vault_forwarding": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+						},
 					},
 				},
 			},
@@ -99,12 +182,7 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := credentialProviderResourceModel{
-			ID:          types.StringValue(credentialProvider.EntityDTO.ExternalID),
-			Name:        types.StringValue(credentialProvider.EntityDTO.Name),
-			Description: types.StringValue(credentialProvider.EntityDTO.Description),
-			IsActive:    types.BoolValue(credentialProvider.EntityDTO.IsActive),
-		}
+		credentialProviderState := ConvertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{})
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

@@ -266,7 +266,10 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewCredentialProvidersDataSource,
 		NewTrustProvidersDataSource,
 		NewClientWorkloadsDataSource,
+		NewIntegrationsDataSource,
+		NewAccessConditionsDataSource,
 		NewAccessPoliciesDataSource,
+		NewAgentControllersDataSource,
 	}
 }
 

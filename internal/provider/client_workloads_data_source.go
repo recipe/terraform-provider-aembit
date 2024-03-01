@@ -124,16 +124,7 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
-		clientWorkloadState := clientWorkloadResourceModel{
-			ID:          types.StringValue(clientWorkload.EntityDTO.ExternalID),
-			Name:        types.StringValue(clientWorkload.EntityDTO.Name),
-			Description: types.StringValue(clientWorkload.EntityDTO.Description),
-			IsActive:    types.BoolValue(clientWorkload.EntityDTO.IsActive),
-			Type:        types.StringValue(clientWorkload.Type),
-		}
-		clientWorkloadState.Identities = newClientWorkloadIdentityModel(ctx, clientWorkload.Identities)
-		clientWorkloadState.Tags = newTagsModel(ctx, clientWorkload.Tags)
-
+		clientWorkloadState := ConvertClientWorkloadDTOToModel(ctx, clientWorkload)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}
 

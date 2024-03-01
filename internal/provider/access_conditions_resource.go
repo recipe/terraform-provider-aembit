@@ -142,7 +142,7 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, plan)
+	plan = ConvertAccessConditionDTOToModel(ctx, *accessCondition, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -172,7 +172,7 @@ func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	state = convertAccessConditionDTOToModel(ctx, accessCondition, state)
+	state = ConvertAccessConditionDTOToModel(ctx, accessCondition, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -217,7 +217,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessConditionDTOToModel(ctx, *accessCondition, state)
+	state = ConvertAccessConditionDTOToModel(ctx, *accessCondition, state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -301,7 +301,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
+func ConvertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
 	var model accessConditionResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)

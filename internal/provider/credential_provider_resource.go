@@ -200,7 +200,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = ConvertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -230,7 +230,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state)
+	state = ConvertCredentialProviderDTOToModel(ctx, credentialProvider, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -275,7 +275,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = ConvertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -401,7 +401,7 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	return credential
 }
 
-func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
+func ConvertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
 	var model credentialProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)

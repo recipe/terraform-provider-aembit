@@ -173,28 +173,7 @@ func (d *serverWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
-		serverWorkloadState := serverWorkloadResourceModel{
-			ID:          types.StringValue(serverWorkload.EntityDTO.ExternalID),
-			Name:        types.StringValue(serverWorkload.EntityDTO.Name),
-			Description: types.StringValue(serverWorkload.EntityDTO.Description),
-			IsActive:    types.BoolValue(serverWorkload.EntityDTO.IsActive),
-			Type:        types.StringValue(serverWorkload.Type),
-		}
-		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
-
-		serverWorkloadState.ServiceEndpoint = &serviceEndpointModel{
-			ExternalID:        types.StringValue(serverWorkload.ServiceEndpoint.ExternalID),
-			ID:                types.Int64Value(int64(serverWorkload.ServiceEndpoint.ID)),
-			Host:              types.StringValue(serverWorkload.ServiceEndpoint.Host),
-			AppProtocol:       types.StringValue(serverWorkload.ServiceEndpoint.AppProtocol),
-			TransportProtocol: types.StringValue(serverWorkload.ServiceEndpoint.TransportProtocol),
-			RequestedPort:     types.Int64Value(int64(serverWorkload.ServiceEndpoint.RequestedPort)),
-			RequestedTLS:      types.BoolValue(serverWorkload.ServiceEndpoint.RequestedTLS),
-			Port:              types.Int64Value(int64(serverWorkload.ServiceEndpoint.Port)),
-			TLS:               types.BoolValue(serverWorkload.ServiceEndpoint.TLS),
-			TLSVerification:   types.StringValue(serverWorkload.ServiceEndpoint.TLSVerification),
-		}
-
+		serverWorkloadState := ConvertServerWorkloadDTOToModel(ctx, serverWorkload)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}
 

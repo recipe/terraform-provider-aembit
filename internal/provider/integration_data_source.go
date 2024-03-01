@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -77,6 +79,39 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 							Description: "Active/Inactive status of the integration.",
 							Computed:    true,
 						},
+						"tags": schema.MapAttribute{
+							Description: "Tags are key-value pairs.",
+							ElementType: types.StringType,
+							Computed:    true,
+						},
+						"type": schema.StringAttribute{
+							Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOf([]string{"WizIntegrationApi", "CrowdStrike"}...),
+							},
+						},
+						"sync_frequency": schema.Int64Attribute{
+							Description: "Frequency to be used for synchronizing the integration.",
+							Computed:    true,
+						},
+						"endpoint": schema.StringAttribute{
+							Description: "Endpoint to be used for performing the integration.",
+							Computed:    true,
+						},
+						"oauth_client_credentials": schema.SingleNestedAttribute{
+							Description: "OAuth Client Credentials authentication information for the integration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"token_url": schema.StringAttribute{Required: true},
+								"client_id": schema.StringAttribute{Required: true},
+								"client_secret": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+								"audience": schema.StringAttribute{Optional: true},
+							},
+						},
 					},
 				},
 			},
@@ -99,12 +134,7 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	// Map response body to model
 	for _, integration := range integrations {
-		integrationState := integrationResourceModel{
-			ID:          types.StringValue(integration.EntityDTO.ExternalID),
-			Name:        types.StringValue(integration.EntityDTO.Name),
-			Description: types.StringValue(integration.EntityDTO.Description),
-			IsActive:    types.BoolValue(integration.EntityDTO.IsActive),
-		}
+		integrationState := ConvertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
 	}
 

@@ -147,7 +147,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	state = convertAccessPolicyExternalDTOToModel(accessPolicy)
+	state = ConvertAccessPolicyExternalDTOToModel(accessPolicy)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -291,7 +291,7 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 	return model
 }
 
-func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
+func ConvertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)

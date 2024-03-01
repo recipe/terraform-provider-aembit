@@ -113,7 +113,7 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAgentControllerDTOToModel(ctx, *agentController)
+	plan = ConvertAgentControllerDTOToModel(ctx, *agentController)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -143,7 +143,7 @@ func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	state = convertAgentControllerDTOToModel(ctx, agentController)
+	state = ConvertAgentControllerDTOToModel(ctx, agentController)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -188,7 +188,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAgentControllerDTOToModel(ctx, *agentController)
+	state = ConvertAgentControllerDTOToModel(ctx, *agentController)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -260,7 +260,7 @@ func convertAgentControllerModelToDTO(ctx context.Context, model agentController
 	return controller
 }
 
-func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) agentControllerResourceModel {
+func ConvertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) agentControllerResourceModel {
 	var model agentControllerResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
