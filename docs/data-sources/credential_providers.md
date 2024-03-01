@@ -24,7 +24,56 @@ Manages an credential provider.
 
 Read-Only:
 
+- `api_key` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--api_key))
 - `description` (String) User-provided description of the credential provider.
 - `id` (String) Alphanumeric identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `name` (String) User-provided name of the credential provider.
+- `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
+- `tags` (Map of String) Tags are key-value pairs.
+- `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
+
+<a id="nestedatt--credential_providers--api_key"></a>
+### Nested Schema for `credential_providers.api_key`
+
+Read-Only:
+
+- `api_key` (String, Sensitive)
+
+
+<a id="nestedatt--credential_providers--oauth_client_credentials"></a>
+### Nested Schema for `credential_providers.oauth_client_credentials`
+
+Read-Only:
+
+- `client_id` (String)
+- `client_secret` (String, Sensitive)
+- `scopes` (String)
+- `token_url` (String)
+
+
+<a id="nestedatt--credential_providers--vault_client_token"></a>
+### Nested Schema for `credential_providers.vault_client_token`
+
+Read-Only:
+
+- `custom_claims` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token--custom_claims))
+- `lifetime` (Number)
+- `subject` (String)
+- `subject_type` (String)
+- `vault_forwarding` (String)
+- `vault_host` (String)
+- `vault_namespace` (String)
+- `vault_path` (String)
+- `vault_port` (Number)
+- `vault_role` (String)
+- `vault_tls` (Boolean)
+
+<a id="nestedatt--credential_providers--vault_client_token--custom_claims"></a>
+### Nested Schema for `credential_providers.vault_client_token.custom_claims`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)

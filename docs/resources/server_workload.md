@@ -45,17 +45,17 @@ Required:
 
 Optional:
 
+- `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
 - `requested_tls` (Boolean) tls requested on the service endpoint.
 - `tls` (Boolean) tls indicated on the service endpoint.
-- `workload_service_authentication` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--workload_service_authentication))
 
 Read-Only:
 
 - `external_id` (String) Alphanumeric identifier of the service endpoint.
 - `id` (Number) Number identifier of the service endpoint.
 
-<a id="nestedatt--service_endpoint--workload_service_authentication"></a>
-### Nested Schema for `service_endpoint.workload_service_authentication`
+<a id="nestedatt--service_endpoint--authentication_config"></a>
+### Nested Schema for `service_endpoint.authentication_config`
 
 Required:
 

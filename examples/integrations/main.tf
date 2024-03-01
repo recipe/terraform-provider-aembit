@@ -12,6 +12,6 @@ provider "aembit" {
 data "aembit_integrations" "first" {}
 
 output "first" {
-  value = data.aembit_integrations.first
+  value     = data.aembit_integrations.first
   sensitive = true
 }
