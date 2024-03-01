@@ -113,7 +113,7 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, accessPolicy := range accessPolicies {
-		accessPolicyState := ConvertAccessPolicyExternalDTOToModel(accessPolicy)
+		accessPolicyState := convertAccessPolicyExternalDTOToModel(accessPolicy)
 		state.AccessPolicies = append(state.AccessPolicies, accessPolicyState)
 	}
 

@@ -126,7 +126,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := ConvertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
+		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

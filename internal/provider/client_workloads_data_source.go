@@ -120,7 +120,7 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
-		clientWorkloadState := ConvertClientWorkloadDTOToModel(ctx, clientWorkload)
+		clientWorkloadState := convertClientWorkloadDTOToModel(ctx, clientWorkload)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}
 

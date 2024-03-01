@@ -143,7 +143,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = ConvertClientWorkloadDTOToModel(ctx, *clientWorkload)
+	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -174,7 +174,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state = ConvertClientWorkloadDTOToModel(ctx, clientWorkload)
+	state = convertClientWorkloadDTOToModel(ctx, clientWorkload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -219,7 +219,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = ConvertClientWorkloadDTOToModel(ctx, *clientWorkload)
+	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -305,7 +305,7 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadRe
 	return workload
 }
 
-func ConvertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) clientWorkloadResourceModel {
+func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) clientWorkloadResourceModel {
 	var model clientWorkloadResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)

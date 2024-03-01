@@ -134,7 +134,7 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	// Map response body to model
 	for _, integration := range integrations {
-		integrationState := ConvertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
+		integrationState := convertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
 	}
 

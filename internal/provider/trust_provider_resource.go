@@ -235,7 +235,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = ConvertTrustProviderDTOToModel(ctx, *trustProvider)
+	plan = convertTrustProviderDTOToModel(ctx, *trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -265,7 +265,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = ConvertTrustProviderDTOToModel(ctx, trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, trustProvider)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -310,7 +310,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = ConvertTrustProviderDTOToModel(ctx, *trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, *trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -513,7 +513,7 @@ func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.Tru
 	}
 }
 
-func ConvertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
