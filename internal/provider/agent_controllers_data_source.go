@@ -82,7 +82,7 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 							ElementType: types.StringType,
 							Computed:    true,
 						},
-						"trust_provider_id": schema.BoolAttribute{
+						"trust_provider_id": schema.StringAttribute{
 							Description: "Trust Provider to use for authentication of the agent controller.",
 							Computed:    true,
 						},
