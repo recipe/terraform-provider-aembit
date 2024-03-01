@@ -77,10 +77,6 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Description: "Active/Inactive status of the client workload.",
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "Type of client workload.",
-							Computed:    true,
-						},
 						"identities": schema.SetNestedAttribute{
 							Description: "Set of client workload identities.",
 							Computed:    true,

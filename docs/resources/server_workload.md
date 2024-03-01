@@ -17,41 +17,46 @@ description: |-
 
 ### Required
 
-- `name` (String) User-provided name of the server workload.
+- `name` (String) Name for the Server Workload.
 - `service_endpoint` (Attributes) Service endpoint details. (see [below for nested schema](#nestedatt--service_endpoint))
 
 ### Optional
 
-- `description` (String) User-provided description of the server workload.
-- `is_active` (Boolean) Active/Inactive status of the server workload.
+- `description` (String) Description for the Server Workload.
+- `is_active` (Boolean) Active status of the Server Workload.
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the server workload.
-- `type` (String) Type of server workload.
+- `id` (String) Unique identifier of the Server Workload.
 
 <a id="nestedatt--service_endpoint"></a>
 ### Nested Schema for `service_endpoint`
 
 Required:
 
-- `app_protocol` (String) protocol of the service endpoint.
-- `host` (String) hostname of the service endpoint.
-- `port` (Number) port of the service endpoint.
-- `requested_port` (Number) requested port of the service endpoint.
-- `tls_verification` (String) tls verification of the service endpoint.
-- `transport_protocol` (String) transport protocol of the service endpoint.
+- `app_protocol` (String) Application Protocol of the Server Workload service endpoint. Possible values are: 
+	* `Amazon Redshift`
+	* `HTTP`
+	* `MySQL`
+	* `PostgreSQL`
+	* `Redis`
+	* `Snowflake`
+- `host` (String) Hostname of the Server Workload service endpoint.
+- `port` (Number) Port of the Server Workload service endpoint.
+- `requested_port` (Number) Requested port of the Server Workload service endpoint.
+- `tls_verification` (String) TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.
+- `transport_protocol` (String) Transport protocol of the Server Workload service endpoint. This value must be set to the default `TCP`.
 
 Optional:
 
+- `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
+- `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
 - `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
-- `requested_tls` (Boolean) tls requested on the service endpoint.
-- `tls` (Boolean) tls indicated on the service endpoint.
 
 Read-Only:
 
-- `external_id` (String) Alphanumeric identifier of the service endpoint.
+- `external_id` (String) Unique identifier of the service endpoint.
 - `id` (Number) Number identifier of the service endpoint.
 
 <a id="nestedatt--service_endpoint--authentication_config"></a>
@@ -59,9 +64,25 @@ Read-Only:
 
 Required:
 
-- `method` (String) Service authentication method.
-- `scheme` (String) Service authentication scheme.
+- `method` (String) Server Workload Service authentication method. Possible values are: 
+	* `API Key`
+	* `HTTP Authentication`
+	* `JWT Token Authentication`
+	* `Password Authentication`
+- `scheme` (String) Server Workload Service authentication scheme. Possible values are: 
+	* For Authentation Method `API Key`:
+		* `Header`
+		* `Query Parameter`
+	* For Authentation Method `HTTP Authentication`:
+		* `Basic`
+		* `Bearer`
+		* `Header`
+		* `AWS Signature v4`
+	* For Authentation Method `JWT Token Authentication`:
+		* `Snowflake JWT`
+	* For Authentation Method `Password Authentication`:
+		* `Password`
 
 Optional:
 
-- `config` (String) Service authentication config.
+- `config` (String) Server Workload Service authentication config. This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme.

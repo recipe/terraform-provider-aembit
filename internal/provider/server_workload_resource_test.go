@@ -35,7 +35,6 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Bearer"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
-					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "service_endpoint.external_id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),

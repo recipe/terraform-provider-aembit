@@ -64,7 +64,7 @@ resource "aembit_server_workload" "first_server" {
         host = "myhost.unittest.com"
         port = 443
         app_protocol = "HTTP"
-        transport_protocol = "TCP"
+		transport_protocol = "TCP"
         requested_port = 80
         tls_verification = "full"
 	    requested_tls = true

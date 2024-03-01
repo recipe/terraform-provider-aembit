@@ -17,41 +17,41 @@ description: |-
 
 ### Required
 
-- `name` (String) User-provided name of the trust provider.
+- `name` (String) Name for the Trust Provider.
 
 ### Optional
 
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_metadata))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
-- `description` (String) User-provided description of the trust provider.
-- `is_active` (Boolean) Active/Inactive status of the trust provider.
+- `description` (String) Description for the Trust Provider.
+- `is_active` (Boolean) Active status of the Trust Provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--kerberos))
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the trust provider.
+- `id` (String) Unique identifier of the Trust Provider.
 
 <a id="nestedatt--aws_metadata"></a>
 ### Nested Schema for `aws_metadata`
 
 Optional:
 
-- `account_id` (String)
-- `architecture` (String)
-- `availability_zone` (String)
-- `billing_products` (String)
-- `certificate` (String) PEM Certificate to be used for Signature verification
-- `image_id` (String)
-- `instance_id` (String)
-- `instance_type` (String)
-- `kernel_id` (String)
-- `marketplace_product_codes` (String)
-- `pending_time` (String)
-- `private_ip` (String)
-- `ramdisk_id` (String)
-- `region` (String)
-- `version` (String)
+- `account_id` (String) The ID of the AWS account that launched the instance.
+- `architecture` (String) The architecture of the AMI used to launch the instance (i386 | x86_64 | arm64).
+- `availability_zone` (String) The Availability Zone in which the instance is running.
+- `billing_products` (String) The billing products of the instance.
+- `certificate` (String) PEM Certificate to be used for Signature verification.
+- `image_id` (String) The ID of the AMI used to launch the instance.
+- `instance_id` (String) The ID of the instance.
+- `instance_type` (String) The instance type of the instance.
+- `kernel_id` (String) The ID of the kernel associated with the instance, if applicable.
+- `marketplace_product_codes` (String) The AWS Marketplace product code of the AMI used to launch the instance.
+- `pending_time` (String) The date and time that the instance was launched.
+- `private_ip` (String) The private IPv4 address of the instance.
+- `ramdisk_id` (String) The ID of the RAM disk associated with the instance, if applicable.
+- `region` (String) The Region in which the instance is running.
+- `version` (String) The version of the instance identity document format.
 
 
 <a id="nestedatt--azure_metadata"></a>
@@ -59,9 +59,9 @@ Optional:
 
 Optional:
 
-- `sku` (String)
-- `subscription_id` (String)
-- `vm_id` (String)
+- `sku` (String) Specific SKU for the Virtual Machine image.
+- `subscription_id` (String) Azure subscription for the Virtual Machine.
+- `vm_id` (String) Unique identifier for the Virtual Machine.
 
 
 <a id="nestedatt--kerberos"></a>
@@ -69,7 +69,7 @@ Optional:
 
 Optional:
 
-- `agent_controller_id` (String)
-- `principal` (String)
-- `realm` (String)
-- `source_ip` (String)
+- `agent_controller_id` (String) Unique identifier for the Aembit Agent Controller to use for Signature verification.
+- `principal` (String) The Kerberos Principal of the authenticated Agent Proxy.
+- `realm` (String) The Kerberos Realm of the authenticated Agent Proxy.
+- `source_ip` (String) The Source IP Address of the authenticated Agent Proxy.

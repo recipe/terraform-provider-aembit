@@ -59,35 +59,49 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the client workload.",
+				Description: "Unique identifier of the Client Workload.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the client workload.",
+				Description: "Name for the Client Workload.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the client workload.",
+				Description: "Description for the Client Workload.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the client workload.",
+				Description: "Active status of the Client Workload.",
 				Optional:    true,
 				Computed:    true,
 			},
-			"type": schema.StringAttribute{
-				Description: "Type of client workload.",
-				Computed:    true,
-			},
 			"identities": schema.SetNestedAttribute{
-				Description: "Set of client workload identities.",
+				Description: "Set of Client Workload identities.",
 				Required:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
-							Description: "Client identity type.",
-							Required:    true,
+							Description: "Client identity type. Possible values are: \n" +
+								"\t* `aembitClientId`\n" +
+								"\t* `awsEcsServiceName`\n" +
+								"\t* `awsEcsTaskFamily`\n" +
+								"\t* `gcpIdentityToken`\n" +
+								"\t* `githubIdTokenSubject`\n" +
+								"\t* `githubIdTokenRepository`\n" +
+								"\t* `hostname`\n" +
+								"\t* `k8sNamespace`\n" +
+								"\t* `k8sPodNamePrefix`\n" +
+								"\t* `k8sPodName`\n" +
+								"\t* `k8sServiceAccountName`\n" +
+								"\t* `k8sServiceAccountUID`\n" +
+								"\t* `processName`\n" +
+								"\t* `processUserName`\n" +
+								"\t* `sourceIPAddress`\n" +
+								"\t* `terraformIdTokenOrganizationId`\n" +
+								"\t* `terraformIdTokenProjectId`\n" +
+								"\t* `terraformIdTokenWorkspaceId`\n",
+							Required: true,
 						},
 						"value": schema.StringAttribute{
 							Description: "Client identity value.",
@@ -297,7 +311,6 @@ func ConvertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Type = types.StringValue(dto.Type)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 

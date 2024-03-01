@@ -39,7 +39,6 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "id"),
-					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "type"),
 				),
 			},
 			// ImportState testing

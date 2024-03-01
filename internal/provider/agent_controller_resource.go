@@ -59,20 +59,20 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the agent controller.",
+				Description: "Unique identifier of the Agent Controller.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the agent controller.",
+				Description: "Name for the Agent Controller.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the agent controller.",
+				Description: "Description for the Agent Controller.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the agent controller.",
+				Description: "Active status of the Agent Controller.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -82,7 +82,7 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 			},
 			"trust_provider_id": schema.StringAttribute{
-				Description: "Trust Provider to use for authentication of the agent controller.",
+				Description: "Unique Trust Provider to use for authentication of the Agent Controller.",
 				Optional:    true,
 			},
 		},
@@ -106,8 +106,8 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 	agentController, err := r.client.CreateAgentController(controller, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating agent controller",
-			"Could not create agent controller, unexpected error: "+err.Error(),
+			"Error creating Agent Controller",
+			"Could not create Agent Controller, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -181,8 +181,8 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	agentController, err := r.client.UpdateAgentController(controller, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating agent controller",
-			"Could not update agent controller, unexpected error: "+err.Error(),
+			"Error updating Agent Controller",
+			"Could not update Agent Controller, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -222,7 +222,7 @@ func (r *agentControllerResource) Delete(ctx context.Context, req resource.Delet
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Agent Controller",
-			"Could not delete agent controller, unexpected error: "+err.Error(),
+			"Could not delete Agent Controller, unexpected error: "+err.Error(),
 		)
 		return
 	}

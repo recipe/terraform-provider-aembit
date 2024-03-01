@@ -17,15 +17,15 @@ description: |-
 
 ### Required
 
-- `name` (String) User-provided name of the agent controller.
+- `name` (String) Name for the Agent Controller.
 
 ### Optional
 
-- `description` (String) User-provided description of the agent controller.
-- `is_active` (Boolean) Active/Inactive status of the agent controller.
+- `description` (String) Description for the Agent Controller.
+- `is_active` (Boolean) Active status of the Agent Controller.
 - `tags` (Map of String) Tags are key-value pairs.
-- `trust_provider_id` (String) Trust Provider to use for authentication of the agent controller.
+- `trust_provider_id` (String) Unique Trust Provider to use for authentication of the Agent Controller.
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the agent controller.
+- `id` (String) Unique identifier of the Agent Controller.

@@ -82,10 +82,6 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Optional:    true,
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "Type of server workload.",
-							Computed:    true,
-						},
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,

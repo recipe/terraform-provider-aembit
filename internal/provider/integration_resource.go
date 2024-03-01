@@ -61,20 +61,20 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the integration.",
+				Description: "Unique identifier of the Integration.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the integration.",
+				Description: "Name for the Integration.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the integration.",
+				Description: "Description for the Integration.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the integration.",
+				Description: "Active status of the Integration.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -84,31 +84,41 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional:    true,
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
+				Description: "Type of Aembit Integration. Possible values are: `WizIntegrationApi` or `CrowdStrike`.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"WizIntegrationApi", "CrowdStrike"}...),
 				},
 			},
 			"sync_frequency": schema.Int64Attribute{
-				Description: "Frequency to be used for synchronizing the integration.",
+				Description: "Frequency to be used for synchronizing the Integration.",
 				Required:    true,
 			},
 			"endpoint": schema.StringAttribute{
-				Description: "Endpoint to be used for performing the integration.",
+				Description: "Endpoint to be used for performing the Integration.",
 				Required:    true,
 			},
 			"oauth_client_credentials": schema.SingleNestedAttribute{
-				Description: "OAuth Client Credentials authentication information for the integration.",
+				Description: "OAuth Client Credentials authentication information for the Integration.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"token_url": schema.StringAttribute{Required: true},
-					"client_id": schema.StringAttribute{Required: true},
-					"client_secret": schema.StringAttribute{
-						Required:  true,
-						Sensitive: true,
+					"token_url": schema.StringAttribute{
+						Description: "Token URL for the OAuth Endpoint of the Integration.",
+						Required:    true,
 					},
-					"audience": schema.StringAttribute{Optional: true},
+					"client_id": schema.StringAttribute{
+						Description: "Client ID for the OAuth Endpoint of the Integration.",
+						Required:    true,
+					},
+					"client_secret": schema.StringAttribute{
+						Description: "Client Secret for the OAuth Endpoint of the Integration.",
+						Required:    true,
+						Sensitive:   true,
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for the OAuth Endpoint of the Integration.",
+						Optional:    true,
+					},
 				},
 			},
 		},
@@ -132,8 +142,8 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	integration, err := r.client.CreateIntegration(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating integration",
-			"Could not create integration, unexpected error: "+err.Error(),
+			"Error creating Integration",
+			"Could not create Integration, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -207,8 +217,8 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	integration, err := r.client.UpdateIntegration(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating integration",
-			"Could not update integration, unexpected error: "+err.Error(),
+			"Error updating Integration",
+			"Could not update Integration, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -248,7 +258,7 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
-			"Could not delete integration, unexpected error: "+err.Error(),
+			"Could not delete Integration, unexpected error: "+err.Error(),
 		)
 		return
 	}

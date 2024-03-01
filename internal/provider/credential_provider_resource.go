@@ -61,20 +61,20 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
-				Description: "Alphanumeric identifier of the credential provider.",
+				Description: "Unique identifier of the Credential Provider.",
 				Computed:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name of the credential provider.",
+				Description: "Name for the Credential Provider.",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description of the credential provider.",
+				Description: "Description for the Credential Provider.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the credential provider.",
+				Description: "Active status of the Credential Provider.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -84,80 +84,102 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 			},
 			"api_key": schema.SingleNestedAttribute{
-				Optional: true,
+				Description: "API Key type Credential Provider configuration.",
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"api_key": schema.StringAttribute{
-						Optional:  true,
-						Sensitive: true,
+						Description: "API Key secret of the Credential Provider.",
+						Optional:    true,
+						Sensitive:   true,
 					},
 				},
 			},
 			"oauth_client_credentials": schema.SingleNestedAttribute{
-				Optional: true,
+				Description: "OAuth Client Credentials Flow type Credential Provider configuration.",
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"token_url": schema.StringAttribute{
-						Required: true,
+						Description: "Token URL for the OAuth Credential Provider.",
+						Required:    true,
 					},
 					"client_id": schema.StringAttribute{
-						Required: true,
+						Description: "Client ID for the OAuth Credential Provider.",
+						Required:    true,
 					},
 					"client_secret": schema.StringAttribute{
-						Optional:  true,
-						Sensitive: true,
+						Description: "Client Secret for the OAuth Credential Provider.",
+						Optional:    true,
+						Sensitive:   true,
 					},
 					"scopes": schema.StringAttribute{
-						Optional: true,
+						Description: "Scopes for the OAuth Credential Provider.",
+						Optional:    true,
 					},
 				},
 			},
 			"vault_client_token": schema.SingleNestedAttribute{
-				Optional: true,
+				Description: "Vault Client Token type Credential Provider configuration.",
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"subject": schema.StringAttribute{
-						Required: true,
+						Description: "Subject of the JWT Token used to authenticate to the Vault Cluster.",
+						Required:    true,
 					},
 					"subject_type": schema.StringAttribute{
-						Required: true,
+						Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+						Required:    true,
 					},
 					"custom_claims": schema.SetNestedAttribute{
-						Optional: true,
+						Description: "Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster.",
+						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
-									Required: true,
+									Description: "Key for the JWT Token Custom Claim.",
+									Required:    true,
 								},
 								"value": schema.StringAttribute{
-									Required: true,
+									Description: "Value for the JWT Token Custom Claim.",
+									Required:    true,
 								},
 								"value_type": schema.StringAttribute{
-									Required: true,
+									Description: "Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.",
+									Required:    true,
 								},
 							},
 						},
 					},
 					"lifetime": schema.Int64Attribute{
-						Required: true,
+						Description: "Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
+						Required:    true,
 					},
 					"vault_host": schema.StringAttribute{
-						Required: true,
+						Description: "Hostname of the Vault Cluster to be used for executing the login API.",
+						Required:    true,
 					},
 					"vault_port": schema.Int64Attribute{
-						Required: true,
+						Description: "Port of the Vault Cluster to be used for executing the login API.",
+						Required:    true,
 					},
 					"vault_tls": schema.BoolAttribute{
-						Required: true,
+						Description: "Configuration to utilize TLS for connectivity to the Vault Cluster.",
+						Required:    true,
 					},
 					"vault_namespace": schema.StringAttribute{
-						Optional: true,
+						Description: "Namespace to utilize when executing the login API on the Vault Cluster.",
+						Optional:    true,
 					},
 					"vault_role": schema.StringAttribute{
-						Optional: true,
+						Description: "Role to utilize when executing the login API on the Vault Cluster.",
+						Optional:    true,
 					},
 					"vault_path": schema.StringAttribute{
-						Required: true,
+						Description: "Path to utilize when executing the login API on the Vault Cluster.",
+						Required:    true,
 					},
 					"vault_forwarding": schema.StringAttribute{
-						Optional: true,
+						Description: "If Vault Forwarding is required, this configuration can be set to `unconditional` or `conditional`.",
+						Optional:    true,
 					},
 				},
 			},
@@ -165,7 +187,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 	}
 }
 
-// Configure validators to ensure that only one credential provider type is specified.
+// Configure validators to ensure that only one Credential Provider type is specified.
 func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -193,8 +215,8 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	credentialProvider, err := r.client.CreateCredentialProvider(credential, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating credential provider",
-			"Could not create credential provider, unexpected error: "+err.Error(),
+			"Error creating Credential Provider",
+			"Could not create Credential Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -268,8 +290,8 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	credentialProvider, err := r.client.UpdateCredentialProvider(credential, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating credential provider",
-			"Could not update credential provider, unexpected error: "+err.Error(),
+			"Error updating Credential Provider",
+			"Could not update Credential Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -309,7 +331,7 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",
-			"Could not delete credential provider, unexpected error: "+err.Error(),
+			"Could not delete Credential Provider, unexpected error: "+err.Error(),
 		)
 		return
 	}

@@ -33,7 +33,6 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the server workload.
 - `name` (String) User-provided name of the server workload.
 - `service_endpoint` (Attributes) Service endpoint details. (see [below for nested schema](#nestedatt--server_workloads--service_endpoint))
-- `type` (String) Type of server workload.
 
 <a id="nestedatt--server_workloads--service_endpoint"></a>
 ### Nested Schema for `server_workloads.service_endpoint`
