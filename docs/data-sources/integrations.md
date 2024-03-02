@@ -26,7 +26,7 @@ Read-Only:
 
 - `description` (String) User-provided description of the integration.
 - `endpoint` (String) Endpoint to be used for performing the integration.
-- `id` (String) Alphanumeric identifier of the integration.
+- `id` (String) Unique identifier of the integration.
 - `is_active` (Boolean) Active/Inactive status of the integration.
 - `name` (String) User-provided name of the integration.
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials authentication information for the integration. (see [below for nested schema](#nestedatt--integrations--oauth_client_credentials))

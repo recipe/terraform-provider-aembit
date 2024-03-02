@@ -29,7 +29,7 @@ Optional:
 Read-Only:
 
 - `description` (String) User-provided description of the client workload.
-- `id` (String) Alphanumeric identifier of the client workload.
+- `id` (String) Unique identifier of the client workload.
 - `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--client_workloads--identities))
 - `is_active` (Boolean) Active/Inactive status of the client workload.
 - `name` (String) User-provided name of the client workload.

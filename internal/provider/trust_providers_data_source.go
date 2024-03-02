@@ -62,7 +62,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the trust provider.",
+							Description: "Unique identifier of the trust provider.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{

@@ -26,7 +26,7 @@ Read-Only:
 
 - `api_key` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--api_key))
 - `description` (String) User-provided description of the credential provider.
-- `id` (String) Alphanumeric identifier of the credential provider.
+- `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `name` (String) User-provided name of the credential provider.
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))

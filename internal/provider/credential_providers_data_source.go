@@ -62,7 +62,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the credential provider.",
+							Description: "Unique identifier of the credential provider.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{

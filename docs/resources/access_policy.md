@@ -29,4 +29,4 @@ description: |-
 
 ### Read-Only
 
-- `id` (String) Alphanumeric identifier of the Access Policy.
+- `id` (String) Unique identifier of the Access Policy.

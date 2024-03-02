@@ -244,6 +244,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewAccessConditionsDataSource,
 		NewAccessPoliciesDataSource,
 		NewAgentControllersDataSource,
+		NewAgentControllerDeviceCodeDataSource,
 	}
 }
 

@@ -27,7 +27,7 @@ Read-Only:
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
 - `description` (String) User-provided description of the trust provider.
-- `id` (String) Alphanumeric identifier of the trust provider.
+- `id` (String) Unique identifier of the trust provider.
 - `is_active` (Boolean) Active/Inactive status of the trust provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kerberos))
 - `name` (String) User-provided name of the trust provider.
