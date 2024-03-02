@@ -62,7 +62,7 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the client workload.",
+							Description: "Unique identifier of the client workload.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{

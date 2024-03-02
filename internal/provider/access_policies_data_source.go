@@ -62,7 +62,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the access policy.",
+							Description: "Unique identifier of the access policy.",
 							Computed:    true,
 						},
 						"is_active": schema.BoolAttribute{

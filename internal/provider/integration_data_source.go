@@ -64,7 +64,7 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the integration.",
+							Description: "Unique identifier of the integration.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{

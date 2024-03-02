@@ -62,7 +62,7 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the agent controller.",
+							Description: "Unique identifier of the agent controller.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{

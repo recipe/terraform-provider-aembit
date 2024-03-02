@@ -62,7 +62,7 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the server workload.",
+							Description: "Unique identifier of the server workload.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -87,7 +87,7 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"external_id": schema.StringAttribute{
-									Description: "Alphanumeric identifier of the service endpoint.",
+									Description: "Unique identifier of the service endpoint.",
 									Computed:    true,
 								},
 								"id": schema.Int64Attribute{

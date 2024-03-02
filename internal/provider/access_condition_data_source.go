@@ -62,7 +62,7 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 					Attributes: map[string]schema.Attribute{
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
-							Description: "Alphanumeric identifier of the accessCondition.",
+							Description: "Unique identifier of the accessCondition.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
