@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -110,6 +112,16 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 							"\t* `Redis`\n" +
 							"\t* `Snowflake`\n",
 						Required: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"Amazon Redshift",
+								"HTTP",
+								"MySQL",
+								"PostgreSQL",
+								"Redis",
+								"Snowflake",
+							}...),
+						},
 					},
 					"requested_port": schema.Int64Attribute{
 						Description: "Requested port of the Server Workload service endpoint.",
@@ -118,10 +130,21 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 					"tls_verification": schema.StringAttribute{
 						Description: "TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"full",
+								"none",
+							}...),
+						},
 					},
 					"transport_protocol": schema.StringAttribute{
 						Description: "Transport protocol of the Server Workload service endpoint. This value must be set to the default `TCP`.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"TCP",
+							}...),
+						},
 					},
 					"requested_tls": schema.BoolAttribute{
 						Description: "TLS requested on the Server Workload service endpoint.",
@@ -144,6 +167,14 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									"\t* `JWT Token Authentication`\n" +
 									"\t* `Password Authentication`\n",
 								Required: true,
+								Validators: []validator.String{
+									stringvalidator.OneOf([]string{
+										"API Key",
+										"HTTP Authentication",
+										"JWT Token Authentication",
+										"Password Authentication",
+									}...),
+								},
 							},
 							"scheme": schema.StringAttribute{
 								Description: "Server Workload Service authentication scheme. Possible values are: \n" +
@@ -160,6 +191,18 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									"\t* For Authentation Method `Password Authentication`:\n" +
 									"\t\t* `Password`\n",
 								Required: true,
+								Validators: []validator.String{
+									stringvalidator.OneOf([]string{
+										"Header",
+										"Query Parameter",
+										"Basic",
+										"Bearer",
+										"Header",
+										"AWS Signature v4",
+										"Snowflake JWT",
+										"Password",
+									}...),
+								},
 							},
 							"config": schema.StringAttribute{
 								Description: "Server Workload Service authentication config. This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme.",

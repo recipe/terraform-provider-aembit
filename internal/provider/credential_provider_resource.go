@@ -7,9 +7,12 @@ import (
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -128,6 +131,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"subject_type": schema.StringAttribute{
 						Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"literal",
+								"dynamic",
+							}...),
+						},
 					},
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster.",
@@ -145,6 +154,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 								"value_type": schema.StringAttribute{
 									Description: "Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
 								},
 							},
 						},
@@ -180,6 +195,15 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"vault_forwarding": schema.StringAttribute{
 						Description: "If Vault Forwarding is required, this configuration can be set to `unconditional` or `conditional`.",
 						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"",
+								"unconditional",
+								"conditional",
+							}...),
+						},
 					},
 				},
 			},
