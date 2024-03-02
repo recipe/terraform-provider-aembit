@@ -25,7 +25,7 @@ Manages an agent controller.
 Read-Only:
 
 - `description` (String) User-provided description of the agent controller.
-- `id` (String) Alphanumeric identifier of the agent controller.
+- `id` (String) Unique identifier of the agent controller.
 - `is_active` (Boolean) Active/Inactive status of the agent controller.
 - `name` (String) User-provided name of the agent controller.
 - `tags` (Map of String) Tags are key-value pairs.

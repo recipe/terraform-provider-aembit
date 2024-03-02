@@ -26,7 +26,7 @@ Read-Only:
 
 - `crowdstrike_conditions` (Attributes) CrowdStrike Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--access_conditions--crowdstrike_conditions))
 - `description` (String) User-provided description of the accessCondition.
-- `id` (String) Alphanumeric identifier of the accessCondition.
+- `id` (String) Unique identifier of the accessCondition.
 - `integration_id` (String) ID of the Integration used by the Access Condition.
 - `is_active` (Boolean) Active/Inactive status of the accessCondition.
 - `name` (String) User-provided name of the accessCondition.

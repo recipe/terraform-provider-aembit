@@ -29,7 +29,7 @@ Optional:
 Read-Only:
 
 - `description` (String) User-provided description of the server workload.
-- `id` (String) Alphanumeric identifier of the server workload.
+- `id` (String) Unique identifier of the server workload.
 - `is_active` (Boolean) Active/Inactive status of the server workload.
 - `name` (String) User-provided name of the server workload.
 - `service_endpoint` (Attributes) Service endpoint details. (see [below for nested schema](#nestedatt--server_workloads--service_endpoint))
@@ -44,7 +44,7 @@ Optional:
 Read-Only:
 
 - `app_protocol` (String) protocol of the service endpoint.
-- `external_id` (String) Alphanumeric identifier of the service endpoint.
+- `external_id` (String) Unique identifier of the service endpoint.
 - `host` (String) hostname of the service endpoint.
 - `id` (Number) Number identifier of the service endpoint.
 - `port` (Number) port of the service endpoint.
