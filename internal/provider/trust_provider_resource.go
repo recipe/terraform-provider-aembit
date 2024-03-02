@@ -98,13 +98,6 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					"subscription_id": schema.StringAttribute{
 						Description: "Azure subscription for the Virtual Machine.",
 						Optional:    true,
-						//Validators: []validator.String{
-						//	// Validate azure_metadata has at least one value
-						//	stringvalidator.AtLeastOneOf(path.Expressions{
-						//		path.MatchRelative().AtParent().AtName("sku"),
-						//		path.MatchRelative().AtParent().AtName("vm_id"),
-						//	}...),
-						//},
 					},
 				},
 			},

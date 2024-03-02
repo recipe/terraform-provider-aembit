@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -102,6 +104,28 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								"\t* `terraformIdTokenProjectId`\n" +
 								"\t* `terraformIdTokenWorkspaceId`\n",
 							Required: true,
+							Validators: []validator.String{
+								stringvalidator.OneOf([]string{
+									"aembitClientId",
+									"awsEcsServiceName",
+									"awsEcsTaskFamily",
+									"gcpIdentityToken",
+									"githubIdTokenSubject",
+									"githubIdTokenRepository",
+									"hostname",
+									"k8sNamespace",
+									"k8sPodNamePrefix",
+									"k8sPodName",
+									"k8sServiceAccountName",
+									"k8sServiceAccountUID",
+									"processName",
+									"processUserName",
+									"sourceIPAddress",
+									"terraformIdTokenOrganizationId",
+									"terraformIdTokenProjectId",
+									"terraformIdTokenWorkspaceId",
+								}...),
+							},
 						},
 						"value": schema.StringAttribute{
 							Description: "Client identity value.",

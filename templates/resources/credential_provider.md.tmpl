@@ -51,7 +51,6 @@ resource "aembit_credential_provider" "vault" {
 		vault_namespace = "vault_namespace"
 		vault_path = "vault_path"
 		vault_role = "vault_role"
-		vault_forwarding = ""
 	}
 }
 ```
