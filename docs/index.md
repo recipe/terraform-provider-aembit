@@ -21,7 +21,7 @@ To get started using the Aembit Terraform provider, first you'll need an active 
 terraform {
   required_providers {
     aembit = {
-      source = "aembit.io/dev/aembit"
+      source = "aembit/aembit"
     }
   }
 }

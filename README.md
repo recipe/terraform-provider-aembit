@@ -56,7 +56,7 @@ Edit `~/.terraformrc` so that it looks like the following:
 provider_installation {
 
   dev_overrides {
-      "aembit.io/dev/aembit" = "/Users/jkwon/go/bin"
+      "aembit/aembit" = "/Users/jkwon/go/bin"
   }
 
   # For all other providers, install them directly from their origin provider

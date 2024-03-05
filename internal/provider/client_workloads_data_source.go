@@ -112,7 +112,7 @@ func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.Rea
 	clientWorkloads, err := d.client.GetClientWorkloads(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read Aembit Trust Providers",
+			"Unable to Read Aembit Client Workloads",
 			err.Error(),
 		)
 		return

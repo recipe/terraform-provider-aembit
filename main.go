@@ -39,8 +39,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		// TODO: Update this string with the published name of your provider.
-		Address: "aembit.io/dev/aembit",
+		Address: "registry.terraform.io/aembit/aembit",
 		Debug:   debug,
 	}
 

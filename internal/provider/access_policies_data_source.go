@@ -105,7 +105,7 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 	accessPolicies, err := d.client.GetAccessPolicies(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read Aembit Trust Providers",
+			"Unable to Read Aembit Access Policies",
 			err.Error(),
 		)
 		return
