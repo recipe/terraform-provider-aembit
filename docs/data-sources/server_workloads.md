@@ -40,6 +40,7 @@ Read-Only:
 Optional:
 
 - `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--server_workloads--service_endpoint--authentication_config))
+- `http_headers` (Map of String) HTTP Headers are key-value pairs.
 
 Read-Only:
 
