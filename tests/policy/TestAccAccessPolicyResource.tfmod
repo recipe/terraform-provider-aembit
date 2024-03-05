@@ -20,13 +20,6 @@ resource "aembit_trust_provider" "azure1" {
 	}
 }
 
-resource "aembit_trust_provider" "azure2" {
-	name = "TF Acceptance Azure"
-	azure_metadata = {
-		subscription_id = "subscription_id"
-	}
-}
-
 resource "aembit_integration" "wiz" {
 	name = "TF Acceptance Wiz"
 	type = "WizIntegrationApi"
@@ -75,6 +68,9 @@ resource "aembit_server_workload" "first_server" {
 resource "aembit_access_policy" "first_policy" {
     is_active = false
     client_workload = aembit_client_workload.first_client.id
+    trust_providers = [
+        aembit_trust_provider.azure1.id
+    ]
     credential_provider = aembit_credential_provider.api_key.id
     server_workload = aembit_server_workload.first_server.id
 }

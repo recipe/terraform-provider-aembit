@@ -79,7 +79,7 @@ resource "aembit_access_policy" "first_policy" {
         aembit_trust_provider.azure1.id,
         aembit_trust_provider.azure2.id
     ]
-    access_conditions = [
+    access_conditions = [	
         aembit_access_condition.wiz.id
     ]
     credential_provider = aembit_credential_provider.api_key.id
