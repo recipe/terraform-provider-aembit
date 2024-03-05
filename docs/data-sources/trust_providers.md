@@ -70,7 +70,7 @@ Read-Only:
 
 Read-Only:
 
-- `agent_controller_id` (String)
+- `agent_controller_ids` (Set of String)
 - `principal` (String)
 - `realm` (String)
 - `source_ip` (String)

@@ -127,10 +127,13 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Kerberos type Trust Provider configuration.",
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
-								"agent_controller_id": schema.StringAttribute{Computed: true},
-								"principal":           schema.StringAttribute{Computed: true},
-								"realm":               schema.StringAttribute{Computed: true},
-								"source_ip":           schema.StringAttribute{Computed: true},
+								"agent_controller_ids": schema.SetAttribute{
+									Computed:    true,
+									ElementType: types.StringType,
+								},
+								"principal": schema.StringAttribute{Computed: true},
+								"realm":     schema.StringAttribute{Computed: true},
+								"source_ip": schema.StringAttribute{Computed: true},
 							},
 						},
 					},

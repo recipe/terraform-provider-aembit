@@ -148,11 +148,12 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
 	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
 	if len(aembitClientID) > 0 {
+		tenant = getAembitTenantId(aembitClientID)
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
 		if err == nil {
 			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
-				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
 				if err == nil {
 					token = roleToken
 				} else {
@@ -270,8 +271,10 @@ type WorkloadAssessmentIdToken struct {
 }
 
 type WorkloadAssessment struct {
-	Version string                    `json:"version"`
-	GitHub  WorkloadAssessmentIdToken `json:"github"`
+	Version   string                    `json:"version"`
+	GCP       WorkloadAssessmentIdToken `json:"gcp,omitempty"`
+	GitHub    WorkloadAssessmentIdToken `json:"github,omitempty"`
+	Terraform WorkloadAssessmentIdToken `json:"terraform,omitempty"`
 }
 
 type tokenAuth struct {
@@ -290,29 +293,29 @@ func (tokenAuth) RequireTransportSecurity() bool {
 
 func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
 	var err error
-	var clientRequest, workloadAssessment []byte
+	var clientRequest, workloadAssessment string
 	var conn *grpc.ClientConn
 	var aembitClient EdgeCommanderClient
 	var credResponse *CredentialResponse
 
 	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false})
-	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
+	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getAembitTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
 		return "", err
 	}
 	defer conn.Close()
 
-	if clientRequest, err = json.Marshal(ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}); err != nil {
+	if clientRequest, err = getClientRequest(targetHost, targetPort); err != nil {
 		return "", err
 	}
-	if workloadAssessment, err = json.Marshal(WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}); err != nil {
+	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken); err != nil {
 		return "", err
 	}
 
 	aembitClient = NewEdgeCommanderClient(conn)
 	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
-		ClientRequest:      string(clientRequest),
-		AgentAssessment:    string(workloadAssessment),
-		WorkloadAssessment: string(workloadAssessment),
+		ClientRequest:      clientRequest,
+		AgentAssessment:    workloadAssessment,
+		WorkloadAssessment: workloadAssessment,
 	}); err != nil {
 		return "", err
 	}
@@ -320,9 +323,54 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	return credResponse.Credential, nil
 }
 
+func getClientRequest(targetHost string, targetPort int16) (string, error) {
+	var request []byte
+	var err error
+	var clientRequest ClientRequest = ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}
+
+	if request, err = json.Marshal(clientRequest); err != nil {
+		return "", err
+	}
+	return string(request), nil
+}
+
+func getWorkloadAssessment(clientId, idToken string) (string, error) {
+	var assessment []byte
+	var err error
+	var workload WorkloadAssessment
+
+	switch getAembitIdentityType(clientId) {
+	case "gcp_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", GCP: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	case "github_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	case "terraform_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	default:
+		return "", fmt.Errorf("invalid aembit client id")
+	}
+
+	if assessment, err = json.Marshal(workload); err != nil {
+		return "", err
+	}
+	return string(assessment), nil
+}
+
 func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	if isTokenValid(AEMBIT_TOKEN) {
 		return AEMBIT_TOKEN, nil
+	}
+
+	idTokenType := ""
+	switch getAembitIdentityType((clientId)) {
+	case "gcp_idtoken":
+		idTokenType = "gcp"
+	case "github_idtoken":
+		idTokenType = "github"
+	case "terraform_idtoken":
+		idTokenType = "terraform"
+	default:
+		return "", fmt.Errorf("invalid aembit client id")
 	}
 
 	details := url.Values{}
@@ -330,7 +378,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	details.Set("client_id", clientId)
 	attestationData := map[string]interface{}{
 		"version": "1.0.0",
-		"github": map[string]interface{}{
+		idTokenType: map[string]interface{}{
 			"identityToken": idToken,
 		},
 	}
@@ -340,7 +388,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	}
 	details.Set("attestation", string(attestationJSON))
 
-	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getTenantId(clientId), stackDomain)
+	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getAembitTenantId(clientId), stackDomain)
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
@@ -372,12 +420,13 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 
 func getIdentityToken(clientId, stackDomain string) (string, error) {
 	// First, determine which token type we need to get based on the identity type
-	switch getIdentityType((clientId)) {
+	switch getAembitIdentityType((clientId)) {
 	case "gcp_idtoken":
 		return getGcpIdentityToken(clientId, stackDomain)
 	case "github_idtoken":
 		return getGitHubIdentityToken(clientId, stackDomain)
 	case "terraform_idtoken":
+		return getTerraformIdentityToken()
 	}
 	return "", fmt.Errorf("no matching id token configuration")
 }
@@ -387,7 +436,7 @@ func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
 		return GCP_ID_TOKEN, nil
 	}
 
-	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	audience := fmt.Sprintf("https://%s.id.%s", getAembitTenantId(clientId), stackDomain)
 	metadataIdentityTokenUrl := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s", url.QueryEscape(audience))
 
 	req, err := http.NewRequest("GET", metadataIdentityTokenUrl, nil)
@@ -423,7 +472,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 		return "", fmt.Errorf("github action not configured for id_token access")
 	}
 
-	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	audience := fmt.Sprintf("https://%s.id.%s", getAembitTenantId(clientId), stackDomain)
 	identityTokenURL := fmt.Sprintf("%s&audience=%s", tokenRequestURL, url.QueryEscape(audience))
 
 	req, err := http.NewRequest("GET", identityTokenURL, nil)
@@ -457,7 +506,16 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	return GITHUB_ID_TOKEN, nil
 }
 
-func getTenantId(clientId string) string {
+func getTerraformIdentityToken() (string, error) {
+	if isTokenValid(TERRAFORM_ID_TOKEN) {
+		return TERRAFORM_ID_TOKEN, nil
+	}
+
+	TERRAFORM_ID_TOKEN := os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
+	return TERRAFORM_ID_TOKEN, nil
+}
+
+func getAembitTenantId(clientId string) string {
 	clientIdSplit := strings.Split(clientId, ":")
 	if len(clientIdSplit) >= 3 {
 		return clientIdSplit[2]
@@ -466,7 +524,7 @@ func getTenantId(clientId string) string {
 	return ""
 }
 
-func getIdentityType(clientId string) string {
+func getAembitIdentityType(clientId string) string {
 	clientIdSplit := strings.Split(clientId, ":")
 	if len(clientIdSplit) >= 5 {
 		return clientIdSplit[4]

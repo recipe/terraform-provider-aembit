@@ -7,9 +7,11 @@ import (
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -171,9 +173,13 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Kerberos type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"agent_controller_id": schema.StringAttribute{
+					"agent_controller_ids": schema.SetAttribute{
 						Description: "Unique identifier for the Aembit Agent Controller to use for Signature verification.",
-						Optional:    true,
+						Required:    true,
+						ElementType: types.StringType,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"principal": schema.StringAttribute{
 						Description: "The Kerberos Principal of the authenticated Agent Proxy.",
@@ -489,7 +495,11 @@ func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.
 
 func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "Kerberos"
-	dto.AgentControllerID = model.Kerberos.AgentControllerID.ValueString()
+	dto.AgentControllerIDs = make([]string, len(model.Kerberos.AgentControllerIDs))
+	for i, controllerID := range model.Kerberos.AgentControllerIDs {
+		dto.AgentControllerIDs[i] = controllerID.ValueString()
+	}
+
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
 	if len(model.Kerberos.Principal.ValueString()) > 0 {
@@ -607,10 +617,13 @@ func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAws
 
 func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
 	model := &trustProviderKerberosModel{
-		AgentControllerID: types.StringValue(dto.AgentControllerID),
-		Principal:         types.StringNull(),
-		Realm:             types.StringNull(),
-		SourceIP:          types.StringNull(),
+		Principal: types.StringNull(),
+		Realm:     types.StringNull(),
+		SourceIP:  types.StringNull(),
+	}
+	model.AgentControllerIDs = make([]types.String, len(dto.AgentControllerIDs))
+	for i, controllerID := range dto.AgentControllerIDs {
+		model.AgentControllerIDs[i] = types.StringValue(controllerID)
 	}
 
 	for _, rule := range dto.MatchRules {

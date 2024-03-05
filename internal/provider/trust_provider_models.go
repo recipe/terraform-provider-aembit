@@ -47,8 +47,8 @@ type trustProviderAwsMetadataModel struct {
 }
 
 type trustProviderKerberosModel struct {
-	AgentControllerID types.String `tfsdk:"agent_controller_id"`
-	Principal         types.String `tfsdk:"principal"`
-	Realm             types.String `tfsdk:"realm"`
-	SourceIP          types.String `tfsdk:"source_ip"`
+	AgentControllerIDs []types.String `tfsdk:"agent_controller_ids"`
+	Principal          types.String   `tfsdk:"principal"`
+	Realm              types.String   `tfsdk:"realm"`
+	SourceIP           types.String   `tfsdk:"source_ip"`
 }

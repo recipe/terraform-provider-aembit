@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     aembit = {
-      source  = "aembit.io/dev/aembit"
+      source  = "app.terraform.io/aembit/aembit"
     }
   }
 }

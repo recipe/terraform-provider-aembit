@@ -129,9 +129,12 @@ Optional:
 <a id="nestedatt--kerberos"></a>
 ### Nested Schema for `kerberos`
 
+Required:
+
+- `agent_controller_ids` (Set of String) Unique identifier for the Aembit Agent Controller to use for Signature verification.
+
 Optional:
 
-- `agent_controller_id` (String) Unique identifier for the Aembit Agent Controller to use for Signature verification.
 - `principal` (String) The Kerberos Principal of the authenticated Agent Proxy.
 - `realm` (String) The Kerberos Realm of the authenticated Agent Proxy.
 - `source_ip` (String) The Source IP Address of the authenticated Agent Proxy.
