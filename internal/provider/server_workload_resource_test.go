@@ -34,6 +34,11 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.method", "HTTP Authentication"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Bearer"),
+					// Verify HTTP Headers.
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.http_headers.%", "3"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.http_headers.host", "graph.microsoft.com"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.http_headers.user-agent", "curl/7.64.1"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.http_headers.accept", "*/*"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "service_endpoint.external_id"),
@@ -63,6 +68,8 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.method", "HTTP Authentication"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.scheme", "Header"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.authentication_config.config", "X-Vault-Token"),
+					// Verify HTTP Headers.
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.http_headers.%", "0"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

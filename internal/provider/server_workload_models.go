@@ -32,6 +32,7 @@ type serviceEndpointModel struct {
 
 	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"authentication_config"`
 	TLSVerification               types.String                        `tfsdk:"tls_verification"`
+	HTTPHeaders                   types.Map                           `tfsdk:"http_headers"`
 }
 
 // workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
