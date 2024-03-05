@@ -156,6 +156,11 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Computed:    true,
 					},
+					"http_headers": schema.MapAttribute{
+						Description: "HTTP Headers are key-value pairs.",
+						ElementType: types.StringType,
+						Optional:    true,
+					},
 					"authentication_config": schema.SingleNestedAttribute{
 						Description: "Service authentication details.",
 						Optional:    true,
@@ -405,6 +410,18 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadRe
 		}
 	}
 
+	if len(model.ServiceEndpoint.HTTPHeaders.Elements()) > 0 {
+		headersMap := make(map[string]string)
+		_ = model.ServiceEndpoint.HTTPHeaders.ElementsAs(ctx, &headersMap, true)
+
+		for key, value := range headersMap {
+			workload.ServiceEndpoint.HTTPHeaders = append(workload.ServiceEndpoint.HTTPHeaders, aembit.KeyValuePair{
+				Key:   key,
+				Value: value,
+			})
+		}
+	}
+
 	if externalID != nil {
 		workload.EntityDTO.ExternalID = *externalID
 	}
@@ -431,6 +448,7 @@ func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkl
 		TLS:               types.BoolValue(dto.ServiceEndpoint.TLS),
 		TLSVerification:   types.StringValue(dto.ServiceEndpoint.TLSVerification),
 	}
+	model.ServiceEndpoint.HTTPHeaders = newHTTPHeadersModel(ctx, dto.ServiceEndpoint.HTTPHeaders)
 
 	if dto.ServiceEndpoint.WorkloadServiceAuthentication != nil {
 		model.ServiceEndpoint.WorkloadServiceAuthentication = &workloadServiceAuthenticationModel{

@@ -18,6 +18,11 @@ resource "aembit_server_workload" "test" {
 			"method" = "HTTP Authentication"
 			"scheme" = "Bearer"
 		}
+		http_headers = {
+			host = "graph.microsoft.com"
+			user-agent = "curl/7.64.1"
+			accept = "*/*"
+		}
 	}
     tags = {
         color = "blue"

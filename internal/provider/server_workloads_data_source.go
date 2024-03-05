@@ -126,6 +126,11 @@ func (d *serverWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
+								"http_headers": schema.MapAttribute{
+									Description: "HTTP Headers are key-value pairs.",
+									ElementType: types.StringType,
+									Optional:    true,
+								},
 								"authentication_config": schema.SingleNestedAttribute{
 									Description: "Service authentication details.",
 									Computed:    true,
