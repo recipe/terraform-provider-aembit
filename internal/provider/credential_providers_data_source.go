@@ -82,12 +82,94 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							ElementType: types.StringType,
 							Computed:    true,
 						},
+						"aembit_access_token": schema.SingleNestedAttribute{
+							Description: "Aembit Access Token type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"audience": schema.StringAttribute{
+									Description: "Audience of the Credential Provider.",
+									Computed:    true,
+								},
+								"role_id": schema.StringAttribute{
+									Description: "Aembit Role ID of the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime of the Credential Provider.",
+									Computed:    true,
+								},
+							},
+						},
 						"api_key": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
 								"api_key": schema.StringAttribute{
 									Computed:  true,
 									Sensitive: true,
+								},
+							},
+						},
+						"aws_sts": schema.SingleNestedAttribute{
+							Description: "AWS Security Token Service Federation type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"oidc_issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"role_arn": schema.StringAttribute{
+									Description: "AWS Role Arn to be used for the AWS Session credentials requested by the Credential Provider.",
+									Computed:    true,
+								},
+								"token_audience": schema.StringAttribute{
+									Description: "Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime (seconds) of the AWS Session credentials requested by the Credential Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+							},
+						},
+						"google_workload_identity": schema.SingleNestedAttribute{
+							Description: "Google Workload Identity Federation type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"oidc_issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for GCP Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"service_account": schema.StringAttribute{
+									Description: "Service Account email of the GCP Session credentials requested by the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+							},
+						},
+						"snowflake_jwt": schema.SingleNestedAttribute{
+							Description: "JSON Web Token type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"account_id": schema.StringAttribute{
+									Description: "Snowflake Account ID of the Credential Provider.",
+									Computed:    true,
+								},
+								"username": schema.StringAttribute{
+									Description: "Snowflake Username of the Credential Provider.",
+									Computed:    true,
+								},
+								"alter_user_command": schema.StringAttribute{
+									Description: "Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.",
+									Computed:    true,
 								},
 							},
 						},
@@ -106,6 +188,21 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								},
 								"scopes": schema.StringAttribute{
 									Computed: true,
+								},
+							},
+						},
+						"username_password": schema.SingleNestedAttribute{
+							Description: "Username/Password type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"username": schema.StringAttribute{
+									Description: "Username of the Credential Provider.",
+									Computed:    true,
+								},
+								"password": schema.StringAttribute{
+									Description: "Password of the Credential Provider.",
+									Computed:    true,
+									Sensitive:   true,
 								},
 							},
 						},
@@ -182,7 +279,7 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := convertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{})
+		credentialProviderState := convertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

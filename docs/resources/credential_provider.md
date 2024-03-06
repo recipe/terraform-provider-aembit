@@ -64,16 +64,34 @@ resource "aembit_credential_provider" "vault" {
 
 ### Optional
 
+- `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--aembit_access_token))
 - `api_key` (Attributes) API Key type Credential Provider configuration. (see [below for nested schema](#nestedatt--api_key))
+- `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--aws_sts))
 - `description` (String) Description for the Credential Provider.
+- `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `is_active` (Boolean) Active status of the Credential Provider.
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
+- `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
 - `tags` (Map of String) Tags are key-value pairs.
+- `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--username_password))
 - `vault_client_token` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--vault_client_token))
 
 ### Read-Only
 
 - `id` (String) Unique identifier of the Credential Provider.
+
+<a id="nestedatt--aembit_access_token"></a>
+### Nested Schema for `aembit_access_token`
+
+Required:
+
+- `lifetime` (Number) Lifetime of the Credential Provider.
+- `role_id` (String) Aembit Role ID of the Credential Provider.
+
+Read-Only:
+
+- `audience` (String) Audience of the Credential Provider.
+
 
 <a id="nestedatt--api_key"></a>
 ### Nested Schema for `api_key`
@@ -81,6 +99,40 @@ resource "aembit_credential_provider" "vault" {
 Optional:
 
 - `api_key` (String, Sensitive) API Key secret of the Credential Provider.
+
+
+<a id="nestedatt--aws_sts"></a>
+### Nested Schema for `aws_sts`
+
+Required:
+
+- `role_arn` (String) AWS Role Arn to be used for the AWS Session credentials requested by the Credential Provider.
+
+Optional:
+
+- `lifetime` (Number) Lifetime (seconds) of the AWS Session credentials requested by the Credential Provider.
+
+Read-Only:
+
+- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.
+
+
+<a id="nestedatt--google_workload_identity"></a>
+### Nested Schema for `google_workload_identity`
+
+Required:
+
+- `audience` (String) Audience for GCP Workload Identity Federation configuration of the Credential Provider.
+- `service_account` (String) Service Account email of the GCP Session credentials requested by the Credential Provider.
+
+Optional:
+
+- `lifetime` (Number) Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.
+
+Read-Only:
+
+- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
 
 
 <a id="nestedatt--oauth_client_credentials"></a>
@@ -95,6 +147,28 @@ Optional:
 
 - `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
 - `scopes` (String) Scopes for the OAuth Credential Provider.
+
+
+<a id="nestedatt--snowflake_jwt"></a>
+### Nested Schema for `snowflake_jwt`
+
+Required:
+
+- `account_id` (String) Snowflake Account ID of the Credential Provider.
+- `username` (String) Snowflake Username of the Credential Provider.
+
+Read-Only:
+
+- `alter_user_command` (String) Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.
+
+
+<a id="nestedatt--username_password"></a>
+### Nested Schema for `username_password`
+
+Optional:
+
+- `password` (String, Sensitive) Password of the Credential Provider.
+- `username` (String) Username of the Credential Provider.
 
 
 <a id="nestedatt--vault_client_token"></a>

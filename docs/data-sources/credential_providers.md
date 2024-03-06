@@ -22,6 +22,14 @@ Manages an credential provider.
 <a id="nestedatt--credential_providers"></a>
 ### Nested Schema for `credential_providers`
 
+Optional:
+
+- `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aembit_access_token))
+- `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aws_sts))
+- `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
+- `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--snowflake_jwt))
+- `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--username_password))
+
 Read-Only:
 
 - `api_key` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--api_key))
@@ -32,6 +40,63 @@ Read-Only:
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
 - `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
+
+<a id="nestedatt--credential_providers--aembit_access_token"></a>
+### Nested Schema for `credential_providers.aembit_access_token`
+
+Read-Only:
+
+- `audience` (String) Audience of the Credential Provider.
+- `lifetime` (Number) Lifetime of the Credential Provider.
+- `role_id` (String) Aembit Role ID of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--aws_sts"></a>
+### Nested Schema for `credential_providers.aws_sts`
+
+Optional:
+
+- `lifetime` (Number) Lifetime (seconds) of the AWS Session credentials requested by the Credential Provider.
+
+Read-Only:
+
+- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `role_arn` (String) AWS Role Arn to be used for the AWS Session credentials requested by the Credential Provider.
+- `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--google_workload_identity"></a>
+### Nested Schema for `credential_providers.google_workload_identity`
+
+Optional:
+
+- `lifetime` (Number) Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.
+
+Read-Only:
+
+- `audience` (String) Audience for GCP Workload Identity Federation configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `service_account` (String) Service Account email of the GCP Session credentials requested by the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--snowflake_jwt"></a>
+### Nested Schema for `credential_providers.snowflake_jwt`
+
+Read-Only:
+
+- `account_id` (String) Snowflake Account ID of the Credential Provider.
+- `alter_user_command` (String) Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.
+- `username` (String) Snowflake Username of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--username_password"></a>
+### Nested Schema for `credential_providers.username_password`
+
+Read-Only:
+
+- `password` (String, Sensitive) Password of the Credential Provider.
+- `username` (String) Username of the Credential Provider.
+
 
 <a id="nestedatt--credential_providers--api_key"></a>
 ### Nested Schema for `credential_providers.api_key`

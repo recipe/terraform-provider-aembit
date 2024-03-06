@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -86,6 +88,24 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				ElementType: types.StringType,
 				Optional:    true,
 			},
+			"aembit_access_token": schema.SingleNestedAttribute{
+				Description: "Aembit Access Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"audience": schema.StringAttribute{
+						Description: "Audience of the Credential Provider.",
+						Computed:    true,
+					},
+					"role_id": schema.StringAttribute{
+						Description: "Aembit Role ID of the Credential Provider.",
+						Required:    true,
+					},
+					"lifetime": schema.Int64Attribute{
+						Description: "Lifetime of the Credential Provider.",
+						Required:    true,
+					},
+				},
+			},
 			"api_key": schema.SingleNestedAttribute{
 				Description: "API Key type Credential Provider configuration.",
 				Optional:    true,
@@ -94,6 +114,72 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Description: "API Key secret of the Credential Provider.",
 						Optional:    true,
 						Sensitive:   true,
+					},
+				},
+			},
+			"aws_sts": schema.SingleNestedAttribute{
+				Description: "AWS Security Token Service Federation type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oidc_issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"role_arn": schema.StringAttribute{
+						Description: "AWS Role Arn to be used for the AWS Session credentials requested by the Credential Provider.",
+						Required:    true,
+					},
+					"token_audience": schema.StringAttribute{
+						Description: "Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"lifetime": schema.Int64Attribute{
+						Description: "Lifetime (seconds) of the AWS Session credentials requested by the Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(3600),
+					},
+				},
+			},
+			"google_workload_identity": schema.SingleNestedAttribute{
+				Description: "Google Workload Identity Federation type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oidc_issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for GCP Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"service_account": schema.StringAttribute{
+						Description: "Service Account email of the GCP Session credentials requested by the Credential Provider.",
+						Required:    true,
+					},
+					"lifetime": schema.Int64Attribute{
+						Description: "Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(3600),
+					},
+				},
+			},
+			"snowflake_jwt": schema.SingleNestedAttribute{
+				Description: "JSON Web Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"account_id": schema.StringAttribute{
+						Description: "Snowflake Account ID of the Credential Provider.",
+						Required:    true,
+					},
+					"username": schema.StringAttribute{
+						Description: "Snowflake Username of the Credential Provider.",
+						Required:    true,
+					},
+					"alter_user_command": schema.StringAttribute{
+						Description: "Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.",
+						Computed:    true,
 					},
 				},
 			},
@@ -117,6 +203,21 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"scopes": schema.StringAttribute{
 						Description: "Scopes for the OAuth Credential Provider.",
 						Optional:    true,
+					},
+				},
+			},
+			"username_password": schema.SingleNestedAttribute{
+				Description: "Username/Password type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"username": schema.StringAttribute{
+						Description: "Username of the Credential Provider.",
+						Optional:    true,
+					},
+					"password": schema.StringAttribute{
+						Description: "Password of the Credential Provider.",
+						Optional:    true,
+						Sensitive:   true,
 					},
 				},
 			},
@@ -215,8 +316,13 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("aembit_access_token"),
 			path.MatchRoot("api_key"),
+			path.MatchRoot("aws_sts"),
+			path.MatchRoot("google_workload_identity"),
+			path.MatchRoot("snowflake_jwt"),
 			path.MatchRoot("oauth_client_credentials"),
+			path.MatchRoot("username_password"),
 			path.MatchRoot("vault_client_token"),
 		),
 	}
@@ -246,7 +352,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -276,7 +382,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state)
+	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state, r.client.Tenant, r.client.StackDomain)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -321,7 +427,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -392,12 +498,61 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 		credential.EntityDTO.ExternalID = *externalID
 	}
 
+	// Handle the Aembit Token use case
+	if model.AembitToken != nil {
+		credential.Type = "aembit-access-token"
+		aembitToken := aembit.CredentialAembitTokenDTO{
+			Audience: fmt.Sprintf("%s.api.%s", tenantID, stackDomain),
+			RoleID:   model.AembitToken.Role.ValueString(),
+			Lifetime: model.AembitToken.Lifetime,
+		}
+		aembitTokenJSON, _ := json.Marshal(aembitToken)
+		credential.ProviderDetail = string(aembitTokenJSON)
+	}
+
 	// Handle the API Key use case
 	if model.APIKey != nil {
 		credential.Type = "apikey"
 		apiKey := aembit.CredentialAPIKeyDTO{APIKey: model.APIKey.APIKey.ValueString()}
 		apiKeyJSON, _ := json.Marshal(apiKey)
 		credential.ProviderDetail = string(apiKeyJSON)
+	}
+
+	// Handle the AWS STS use case
+	if model.AwsSTS != nil {
+		credential.Type = "aws-sts-oidc"
+		awsSTS := aembit.CredentialAwsSTSDTO{
+			RoleArn:  model.AwsSTS.RoleARN.ValueString(),
+			Lifetime: model.AwsSTS.Lifetime,
+		}
+		awsSTSJSON, _ := json.Marshal(awsSTS)
+		credential.ProviderDetail = string(awsSTSJSON)
+	}
+
+	// Handle the GCP Workload Identity Federation use case
+	if model.GoogleWorkload != nil {
+		credential.Type = "gcp-identity-federation"
+		gcpWorkload := aembit.CredentialGoogleWorkloadDTO{
+			Audience:       model.GoogleWorkload.Audience.ValueString(),
+			ServiceAccount: model.GoogleWorkload.ServiceAccount.ValueString(),
+			Lifetime:       model.GoogleWorkload.Lifetime,
+		}
+		gcpWorkloadJSON, _ := json.Marshal(gcpWorkload)
+		credential.ProviderDetail = string(gcpWorkloadJSON)
+	}
+
+	// Handle the Snowflake JWT use case
+	if model.SnowflakeToken != nil {
+		credential.Type = "signed-jwt"
+		gcpWorkload := aembit.CredentialSnowflakeTokenDTO{
+			TokenConfiguration: "snowflake",
+			AlgorithmType:      "RS256",
+			Issuer:             fmt.Sprintf("%s.%s.SHA256:{sha256(publicKey)}", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString()),
+			Subject:            fmt.Sprintf("%s.%s", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString()),
+			Lifetime:           1,
+		}
+		gcpWorkloadJSON, _ := json.Marshal(gcpWorkload)
+		credential.ProviderDetail = string(gcpWorkloadJSON)
 	}
 
 	// Handle the OAuth Client Credentials use case
@@ -412,6 +567,17 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 		}
 		oauthJSON, _ := json.Marshal(oauth)
 		credential.ProviderDetail = string(oauthJSON)
+	}
+
+	// Handle the Username Password use case
+	if model.UsernamePassword != nil {
+		credential.Type = "username-password"
+		userPass := aembit.CredentialUsernamePasswordDTO{
+			Username: model.UsernamePassword.Username.ValueString(),
+			Password: model.UsernamePassword.Password.ValueString(),
+		}
+		userPassJSON, _ := json.Marshal(userPass)
+		credential.ProviderDetail = string(userPassJSON)
 	}
 
 	// Handle the Vault Client Token use case
@@ -450,7 +616,7 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	return credential
 }
 
-func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
+func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel, tenant, stackDomain string) credentialProviderResourceModel {
 	var model credentialProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -459,20 +625,51 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	// Set the objects to null to begin with
+	model.AembitToken = nil
 	model.APIKey = nil
+	model.AwsSTS = nil
+	model.GoogleWorkload = nil
 	model.OAuthClientCredentials = nil
+	model.UsernamePassword = nil
 	model.VaultClientToken = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
+	case "aembit-access-token":
+		model.AembitToken = convertAembitTokenDTOToModel(dto)
 	case "apikey":
 		model.APIKey = convertAPIKeyDTOToModel(dto, state)
+	case "aws-sts-oidc":
+		model.AwsSTS = convertAwsSTSDTOToModel(dto, tenant, stackDomain)
+	case "gcp-identity-federation":
+		model.GoogleWorkload = convertGoogleWorkloadDTOToModel(dto, tenant, stackDomain)
+	case "signed-jwt":
+		model.SnowflakeToken = convertSnowflakeTokenDTOToModel(dto)
 	case "oauth-client-credential":
 		model.OAuthClientCredentials = convertOAuthClientCredentialDTOToModel(dto, state)
+	case "username-password":
+		model.UsernamePassword = convertUserPassDTOToModel(dto, state)
 	case "vaultClientToken":
 		model.VaultClientToken = convertVaultClientTokenDTOToModel(dto, state)
 	}
 	return model
+}
+
+// convertAembitTokenDTOToModel converts the Aembit Token state object into a model ready for terraform processing.
+func convertAembitTokenDTOToModel(dto aembit.CredentialProviderDTO) *credentialProviderAembitTokenModel {
+	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
+	var aembitToken aembit.CredentialAembitTokenDTO
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &aembitToken)
+	if err != nil {
+		return nil
+	}
+
+	value := credentialProviderAembitTokenModel{
+		Audience: types.StringValue(aembitToken.Audience),
+		Role:     types.StringValue(aembitToken.RoleID),
+		Lifetime: aembitToken.Lifetime,
+	}
+	return &value
 }
 
 // convertAPIKeyDTOToModel converts the API Key state object into a model ready for terraform processing.
@@ -481,6 +678,63 @@ func convertAPIKeyDTOToModel(_ aembit.CredentialProviderDTO, state credentialPro
 	value := credentialProviderAPIKeyModel{APIKey: types.StringNull()}
 	if state.APIKey != nil {
 		value.APIKey = state.APIKey.APIKey
+	}
+	return &value
+}
+
+// convertAwsSTSDTOToModel converts the AWS STS state object into a model ready for terraform processing.
+func convertAwsSTSDTOToModel(dto aembit.CredentialProviderDTO, tenant, stackDomain string) *credentialProviderAwsSTSModel {
+	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
+	var awsSTS aembit.CredentialAwsSTSDTO
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &awsSTS)
+	if err != nil {
+		return nil
+	}
+
+	value := credentialProviderAwsSTSModel{
+		OIDCIssuer:    types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		TokenAudience: types.StringValue("sts.amazonaws.com"),
+		RoleARN:       types.StringValue(awsSTS.RoleArn),
+		Lifetime:      awsSTS.Lifetime,
+	}
+	return &value
+}
+
+// convertGoogleWorkloadDTOToModel converts the Google Workload state object into a model ready for terraform processing.
+func convertGoogleWorkloadDTOToModel(dto aembit.CredentialProviderDTO, tenant, stackDomain string) *credentialProviderGoogleWorkloadModel {
+	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
+	var gcpWorkload aembit.CredentialGoogleWorkloadDTO
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &gcpWorkload)
+	if err != nil {
+		return nil
+	}
+
+	value := credentialProviderGoogleWorkloadModel{
+		OIDCIssuer:     types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		Audience:       types.StringValue(gcpWorkload.Audience),
+		ServiceAccount: types.StringValue(gcpWorkload.ServiceAccount),
+		Lifetime:       gcpWorkload.Lifetime,
+	}
+	return &value
+}
+
+// convertSnowflakeTokenDTOToModel converts the Snowflake JWT Token state object into a model ready for terraform processing.
+func convertSnowflakeTokenDTOToModel(dto aembit.CredentialProviderDTO) *credentialProviderSnowflakeTokenModel {
+	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
+	var snowflake aembit.CredentialSnowflakeTokenDTO
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &snowflake)
+	if err != nil {
+		return nil
+	}
+
+	acctData := strings.Split(snowflake.Subject, ".")
+	keyData := strings.ReplaceAll(snowflake.KeyContent, "\n", "")
+	keyData = strings.Replace(keyData, "-----BEGIN PUBLIC KEY-----", "", 1)
+	keyData = strings.Replace(keyData, "-----END PUBLIC KEY-----", "", 1)
+	value := credentialProviderSnowflakeTokenModel{
+		AccountID:        types.StringValue(acctData[0]),
+		Username:         types.StringValue(acctData[1]),
+		AlertUserCommand: types.StringValue(fmt.Sprintf("ALTER USER %s SET RSA_PUBLIC_KEY='%s'", acctData[1], keyData)),
 	}
 	return &value
 }
@@ -504,6 +758,26 @@ func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, st
 		value.ClientSecret = state.OAuthClientCredentials.ClientSecret
 	}
 
+	return &value
+}
+
+// convertUserPassDTOToModel converts the API Key state object into a model ready for terraform processing.
+// Note: Since Aembit vaults the Password and does not return it in the API, the DTO will never contain the stored value.
+func convertUserPassDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderUserPassModel {
+	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
+	var userPass aembit.CredentialUsernamePasswordDTO
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &userPass)
+	if err != nil {
+		return nil
+	}
+
+	value := credentialProviderUserPassModel{
+		Username: types.StringValue(userPass.Username),
+		Password: types.StringNull(),
+	}
+	if state.UsernamePassword != nil {
+		value.Password = state.UsernamePassword.Password
+	}
 	return &value
 }
 
