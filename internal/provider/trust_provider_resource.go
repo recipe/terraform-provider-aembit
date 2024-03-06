@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -103,6 +104,28 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
+			"aws_ecs_role": schema.SingleNestedAttribute{
+				Description: "AWS ECS Role type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"account_id": schema.StringAttribute{
+						Description: "The ID of the AWS account that is hosting the ECS Task.",
+						Optional:    true,
+					},
+					"assumed_role": schema.StringAttribute{
+						Description: "The Name of the AWS IAM Role which is running the ECS Task.",
+						Optional:    true,
+					},
+					"role_arn": schema.StringAttribute{
+						Description: "The ARN of the AWS IAM Role which is running the ECS Task.",
+						Optional:    true,
+					},
+					"username": schema.StringAttribute{
+						Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
+						Optional:    true,
+					},
+				},
+			},
 			"aws_metadata": schema.SingleNestedAttribute{
 				Description: "AWS Metadata type Trust Provider configuration.",
 				Optional:    true,
@@ -169,6 +192,34 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
+			"gcp_identity": schema.SingleNestedAttribute{
+				Description: "GCP Identity type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"email": schema.StringAttribute{
+						Description: "The Email of the GCP Service Account used by the associated GCP resource.",
+						Optional:    true,
+					},
+				},
+			},
+			"github_action": schema.SingleNestedAttribute{
+				Description: "GitHub Action type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"actor": schema.StringAttribute{
+						Description: "The GitHub Actor which initiated the GitHub Action.",
+						Optional:    true,
+					},
+					"repository": schema.StringAttribute{
+						Description: "The GitHub Repository associated with the GitHub Action ID Token.",
+						Optional:    true,
+					},
+					"workflow": schema.StringAttribute{
+						Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
+						Optional:    true,
+					},
+				},
+			},
 			"kerberos": schema.SingleNestedAttribute{
 				Description: "Kerberos type Trust Provider configuration.",
 				Optional:    true,
@@ -195,6 +246,58 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
+			"kubernetes_service_account": schema.SingleNestedAttribute{
+				Description: "Kubernetes Service Account type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"issuer": schema.StringAttribute{
+						Description: "The Issuer (`iss` claim) of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"namespace": schema.StringAttribute{
+						Description: "The Namespace of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"pod_name": schema.StringAttribute{
+						Description: "The Pod Name of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"service_account_name": schema.StringAttribute{
+						Description: "The Service Account Name of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"subject": schema.StringAttribute{
+						Description: "The Subject (`sub` claim) of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"oidc_endpoint": schema.StringAttribute{
+						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+					"public_key": schema.StringAttribute{
+						Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
+						Optional:    true,
+					},
+				},
+			},
+			"terraform_workspace": schema.SingleNestedAttribute{
+				Description: "Terraform Workspace type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"organization_id": schema.StringAttribute{
+						Description: "The Organization ID of the calling Terraform Workspace.",
+						Optional:    true,
+					},
+					"project_id": schema.StringAttribute{
+						Description: "The Project ID of the calling Terraform Workspace.",
+						Optional:    true,
+					},
+					"workspace_id": schema.StringAttribute{
+						Description: "The Workspace ID of the calling Terraform Workspace.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -203,9 +306,14 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
-			path.MatchRoot("azure_metadata"),
+			path.MatchRoot("aws_ecs_role"),
 			path.MatchRoot("aws_metadata"),
+			path.MatchRoot("azure_metadata"),
+			path.MatchRoot("gcp_identity"),
+			path.MatchRoot("github_action"),
 			path.MatchRoot("kerberos"),
+			path.MatchRoot("kubernetes_service_account"),
+			path.MatchRoot("terraform_workspace"),
 		),
 	}
 }
@@ -358,6 +466,7 @@ func (r *trustProviderResource) ImportState(ctx context.Context, req resource.Im
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
+// Model to DTO conversion methods.
 func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
@@ -380,117 +489,99 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 		trust.EntityDTO.ExternalID = *externalID
 	}
 
-	// Handle the Azure Metadata use case
-	if model.AzureMetadata != nil {
-		convertAzureMetadataModelToDTO(model, &trust)
-	}
+	// Transform the various Trust Provider types
 	if model.AwsMetadata != nil {
 		convertAwsMetadataModelToDTO(model, &trust)
 	}
+	if model.AwsEcsRole != nil {
+		convertAwsEcsRoleModelToDTO(model, &trust)
+	}
+	if model.AzureMetadata != nil {
+		convertAzureMetadataModelToDTO(model, &trust)
+	}
+	if model.GcpIdentity != nil {
+		convertGcpIdentityModelToDTO(model, &trust)
+	}
+	if model.GitHubAction != nil {
+		convertGitHubActionModelToDTO(model, &trust)
+	}
 	if model.Kerberos != nil {
 		convertKerberosModelToDTO(model, &trust)
+	}
+	if model.KubernetesService != nil {
+		convertKubernetesModelToDTO(model, &trust)
+	}
+	if model.TerraformWorkspace != nil {
+		convertTerraformModelToDTO(model, &trust)
 	}
 
 	return trust
 }
 
+func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, value basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
+	if len(value.ValueString()) > 0 {
+		return append(matchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: attrName, Value: value.ValueString(),
+		})
+	}
+	return matchRules
+}
+
 func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
-	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
-	if len(model.AzureMetadata.Sku.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureSku", Value: model.AzureMetadata.Sku.ValueString(),
-		})
-	}
-	if len(model.AzureMetadata.VMID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureVmId", Value: model.AzureMetadata.VMID.ValueString(),
-		})
-	}
-	if len(model.AzureMetadata.SubscriptionID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureSubscriptionId", Value: model.AzureMetadata.SubscriptionID.ValueString(),
-		})
-	}
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.Sku, "AzureSku")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.VMID, "AzureVmId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.SubscriptionID, "AzureSubscriptionId")
+}
+
+func convertAwsEcsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "AWSECSRole"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AssumedRole, "AwsAssumedRole")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.RoleARN, "AwsRoleARN")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.Username, "AwsUsername")
 }
 
 func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AWSMetadataService"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.AwsMetadata.Certificate.ValueString()))
 	dto.PemType = "Certificate"
-	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
-	if len(model.AwsMetadata.AccountID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsAccountId", Value: model.AwsMetadata.AccountID.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.Architecture.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsArchitecture", Value: model.AwsMetadata.Architecture.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.AvailabilityZone.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsAvailabilityZone", Value: model.AwsMetadata.AvailabilityZone.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.BillingProducts.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsBillingProducts", Value: model.AwsMetadata.BillingProducts.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.ImageID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsImageId", Value: model.AwsMetadata.ImageID.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.InstanceID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsInstanceId", Value: model.AwsMetadata.InstanceID.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.InstanceType.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsInstanceType", Value: model.AwsMetadata.InstanceType.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.KernelID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsKernelId", Value: model.AwsMetadata.KernelID.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.MarketplaceProductCodes.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsMarketplaceProductCodes", Value: model.AwsMetadata.MarketplaceProductCodes.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.PendingTime.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsPendingTime", Value: model.AwsMetadata.PendingTime.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.PrivateIP.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsPrivateIp", Value: model.AwsMetadata.PrivateIP.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.RamdiskID.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsRamdiskId", Value: model.AwsMetadata.RamdiskID.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.Region.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsRegion", Value: model.AwsMetadata.Region.ValueString(),
-		})
-	}
-	if len(model.AwsMetadata.Version.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AwsVersion", Value: model.AwsMetadata.Version.ValueString(),
-		})
-	}
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Architecture, "AwsArchitecture")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.AvailabilityZone, "AwsAvailabilityZone")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.BillingProducts, "AwsBillingProducts")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.ImageID, "AwsImageId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceID, "AwsInstanceId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceType, "AwsInstanceType")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.KernelID, "AwsKernelId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.MarketplaceProductCodes, "AwsMarketplaceProductCodes")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.PendingTime, "AwsPendingTime")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.PrivateIP, "AwsPrivateIp")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.RamdiskID, "AwsRamdiskId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Region, "AwsRegion")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Version, "AwsVersion")
+}
+
+func convertGcpIdentityModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "GcpIdentityToken"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GcpIdentity.EMail, "Email")
+}
+
+func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "GitHubIdentityToken"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Actor, "GithubActor")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Repository, "GithubRepository")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Workflow, "GithubWorkflow")
 }
 
 func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -501,24 +592,37 @@ func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.Tru
 	}
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-
-	if len(model.Kerberos.Principal.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "Principal", Value: model.Kerberos.Principal.ValueString(),
-		})
-	}
-	if len(model.Kerberos.Realm.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "Realm", Value: model.Kerberos.Realm.ValueString(),
-		})
-	}
-	if len(model.Kerberos.SourceIP.ValueString()) > 0 {
-		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "SourceIp", Value: model.Kerberos.SourceIP.ValueString(),
-		})
-	}
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Principal, "Principal")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Realm, "Realm")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.SourceIP, "SourceIp")
 }
 
+func convertKubernetesModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "KubernetesServiceAccount"
+	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.KubernetesService.PublicKey.ValueString()))
+	if len(dto.Certificate) > 0 {
+		dto.PemType = "PublicKey"
+	}
+	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Issuer, "KubernetesIss")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Namespace, "KubernetesIoNamespace")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.PodName, "KubernetesIoPodName")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.ServiceAccountName, "KubernetesIoServiceAccountName")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Subject, "KubernetesSub")
+}
+
+func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "TerraformIdentityToken"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.OrganizationID, "TerraformOrganizationId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.ProjectID, "TerraformProjectId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.WorkspaceID, "TerraformWorkspaceId")
+}
+
+// DTO to Model conversion methods.
 func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
@@ -528,12 +632,22 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	switch dto.Provider {
-	case "AzureMetadataService": // Azure Metadata
-		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
-	case "AWSMetadataService": // AWS Metadata
+	case "AWSECSRole":
+		model.AwsEcsRole = convertAwsEcsRoleDTOToModel(dto)
+	case "AWSMetadataService":
 		model.AwsMetadata = convertAwsMetadataDTOToModel(dto)
-	case "Kerberos": // Kerberos
+	case "AzureMetadataService":
+		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
+	case "GcpIdentityToken":
+		model.GcpIdentity = convertGcpIdentityDTOToModel(dto)
+	case "GitHubIdentityToken":
+		model.GitHubAction = convertGitHubActionDTOToModel(dto)
+	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
+	case "KubernetesServiceAccount":
+		model.KubernetesService = convertKubernetesDTOToModel(dto)
+	case "TerraformIdentityToken":
+		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	}
 
 	return model
@@ -554,6 +668,29 @@ func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderA
 			model.VMID = types.StringValue(rule.Value)
 		case "AzureSubscriptionId":
 			model.SubscriptionID = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertAwsEcsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsEcsRoleModel {
+	model := &trustProviderAwsEcsRoleModel{
+		AccountID:   types.StringNull(),
+		AssumedRole: types.StringNull(),
+		RoleARN:     types.StringNull(),
+		Username:    types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "AwsAccountId":
+			model.AccountID = types.StringValue(rule.Value)
+		case "AwsAssumedRole":
+			model.AssumedRole = types.StringValue(rule.Value)
+		case "AwsRoleARN":
+			model.RoleARN = types.StringValue(rule.Value)
+		case "AwsUsername":
+			model.Username = types.StringValue(rule.Value)
 		}
 	}
 	return model
@@ -634,6 +771,95 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerber
 			model.Realm = types.StringValue(rule.Value)
 		case "SourceIp":
 			model.SourceIP = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKubernetesModel {
+	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
+
+	model := &trustProviderKubernetesModel{
+		Issuer:             types.StringNull(),
+		Namespace:          types.StringNull(),
+		PodName:            types.StringNull(),
+		ServiceAccountName: types.StringNull(),
+		Subject:            types.StringNull(),
+		PublicKey:          types.StringNull(),
+		OIDCEndpoint:       types.StringNull(),
+	}
+	if len(dto.Certificate) > 0 {
+		model.PublicKey = types.StringValue(string(decodedKey))
+	} else {
+		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "KubernetesIss":
+			model.Issuer = types.StringValue(rule.Value)
+		case "KubernetesIoNamespace":
+			model.Namespace = types.StringValue(rule.Value)
+		case "KubernetesIoPodName":
+			model.PodName = types.StringValue(rule.Value)
+		case "KubernetesIoServiceAccountName":
+			model.ServiceAccountName = types.StringValue(rule.Value)
+		case "KubernetesSub":
+			model.Subject = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGcpIdentityModel {
+	model := &trustProviderGcpIdentityModel{
+		EMail: types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "Email":
+			model.EMail = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitHubActionModel {
+	model := &trustProviderGitHubActionModel{
+		Actor:      types.StringNull(),
+		Repository: types.StringNull(),
+		Workflow:   types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "GithubActor":
+			model.Actor = types.StringValue(rule.Value)
+		case "GithubRepository":
+			model.Repository = types.StringValue(rule.Value)
+		case "GithubWorkflow":
+			model.Workflow = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerraformModel {
+	model := &trustProviderTerraformModel{
+		OrganizationID: types.StringNull(),
+		ProjectID:      types.StringNull(),
+		WorkspaceID:    types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "TerraformOrganizationId":
+			model.OrganizationID = types.StringValue(rule.Value)
+		case "TerraformProjectId":
+			model.ProjectID = types.StringValue(rule.Value)
+		case "TerraformWorkspaceId":
+			model.WorkspaceID = types.StringValue(rule.Value)
 		}
 	}
 	return model

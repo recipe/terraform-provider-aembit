@@ -89,13 +89,28 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"vm_id": schema.StringAttribute{Computed: true},
 								"subscription_id": schema.StringAttribute{
 									Computed: true,
-									//Validators: []validator.String{
-									//	// Validate azure_metadata has at least one value
-									//	stringvalidator.AtLeastOneOf(path.Expressions{
-									//		path.MatchRelative().AtParent().AtName("sku"),
-									//		path.MatchRelative().AtParent().AtName("vm_id"),
-									//	}...),
-									//},
+								},
+							},
+						},
+						"aws_ecs_role": schema.SingleNestedAttribute{
+							Description: "AWS ECS Role type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"account_id": schema.StringAttribute{
+									Description: "The ID of the AWS account that is hosting the ECS Task.",
+									Computed:    true,
+								},
+								"assumed_role": schema.StringAttribute{
+									Description: "The Name of the AWS IAM Role which is running the ECS Task.",
+									Computed:    true,
+								},
+								"role_arn": schema.StringAttribute{
+									Description: "The ARN of the AWS IAM Role which is running the ECS Task.",
+									Computed:    true,
+								},
+								"username": schema.StringAttribute{
+									Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
+									Computed:    true,
 								},
 							},
 						},
@@ -123,6 +138,34 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"version":                   schema.StringAttribute{Computed: true},
 							},
 						},
+						"gcp_identity": schema.SingleNestedAttribute{
+							Description: "GCP Identity type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"email": schema.StringAttribute{
+									Description: "The Email of the GCP Service Account used by the associated GCP resource.",
+									Computed:    true,
+								},
+							},
+						},
+						"github_action": schema.SingleNestedAttribute{
+							Description: "GitHub Action type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"actor": schema.StringAttribute{
+									Description: "The GitHub Actor which initiated the GitHub Action.",
+									Computed:    true,
+								},
+								"repository": schema.StringAttribute{
+									Description: "The GitHub Repository associated with the GitHub Action ID Token.",
+									Computed:    true,
+								},
+								"workflow": schema.StringAttribute{
+									Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
+									Computed:    true,
+								},
+							},
+						},
 						"kerberos": schema.SingleNestedAttribute{
 							Description: "Kerberos type Trust Provider configuration.",
 							Computed:    true,
@@ -134,6 +177,58 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"principal": schema.StringAttribute{Computed: true},
 								"realm":     schema.StringAttribute{Computed: true},
 								"source_ip": schema.StringAttribute{Computed: true},
+							},
+						},
+						"kubernetes_service_account": schema.SingleNestedAttribute{
+							Description: "Kubernetes Service Account type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"issuer": schema.StringAttribute{
+									Description: "The Issuer (`iss` claim) of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"namespace": schema.StringAttribute{
+									Description: "The Namespace of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"pod_name": schema.StringAttribute{
+									Description: "The Pod Name of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"service_account_name": schema.StringAttribute{
+									Description: "The Service Account Name of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "The Subject (`sub` claim) of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"oidc_endpoint": schema.StringAttribute{
+									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								"public_key": schema.StringAttribute{
+									Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+							},
+						},
+						"terraform_workspace": schema.SingleNestedAttribute{
+							Description: "Terraform Workspace type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"organization_id": schema.StringAttribute{
+									Description: "The Organization ID of the calling Terraform Workspace.",
+									Computed:    true,
+								},
+								"project_id": schema.StringAttribute{
+									Description: "The Project ID of the calling Terraform Workspace.",
+									Computed:    true,
+								},
+								"workspace_id": schema.StringAttribute{
+									Description: "The Workspace ID of the calling Terraform Workspace.",
+									Computed:    true,
+								},
 							},
 						},
 					},

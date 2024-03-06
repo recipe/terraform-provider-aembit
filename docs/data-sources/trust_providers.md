@@ -24,14 +24,30 @@ Manages an trust provider.
 
 Read-Only:
 
+- `aws_ecs_role` (Attributes) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_ecs_role))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
 - `description` (String) User-provided description of the trust provider.
+- `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gcp_identity))
+- `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--github_action))
 - `id` (String) Unique identifier of the trust provider.
 - `is_active` (Boolean) Active/Inactive status of the trust provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kerberos))
+- `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kubernetes_service_account))
 - `name` (String) User-provided name of the trust provider.
 - `tags` (Map of String)
+- `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
+
+<a id="nestedatt--trust_providers--aws_ecs_role"></a>
+### Nested Schema for `trust_providers.aws_ecs_role`
+
+Read-Only:
+
+- `account_id` (String) The ID of the AWS account that is hosting the ECS Task.
+- `assumed_role` (String) The Name of the AWS IAM Role which is running the ECS Task.
+- `role_arn` (String) The ARN of the AWS IAM Role which is running the ECS Task.
+- `username` (String) The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).
+
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
@@ -65,6 +81,24 @@ Read-Only:
 - `vm_id` (String)
 
 
+<a id="nestedatt--trust_providers--gcp_identity"></a>
+### Nested Schema for `trust_providers.gcp_identity`
+
+Read-Only:
+
+- `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
+
+
+<a id="nestedatt--trust_providers--github_action"></a>
+### Nested Schema for `trust_providers.github_action`
+
+Read-Only:
+
+- `actor` (String) The GitHub Actor which initiated the GitHub Action.
+- `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
+- `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+
+
 <a id="nestedatt--trust_providers--kerberos"></a>
 ### Nested Schema for `trust_providers.kerberos`
 
@@ -74,3 +108,27 @@ Read-Only:
 - `principal` (String)
 - `realm` (String)
 - `source_ip` (String)
+
+
+<a id="nestedatt--trust_providers--kubernetes_service_account"></a>
+### Nested Schema for `trust_providers.kubernetes_service_account`
+
+Read-Only:
+
+- `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
+- `namespace` (String) The Namespace of the Kubernetes Service Account Token.
+- `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
+- `pod_name` (String) The Pod Name of the Kubernetes Service Account Token.
+- `public_key` (String) The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.
+- `service_account_name` (String) The Service Account Name of the Kubernetes Service Account Token.
+- `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
+
+
+<a id="nestedatt--trust_providers--terraform_workspace"></a>
+### Nested Schema for `trust_providers.terraform_workspace`
+
+Read-Only:
+
+- `organization_id` (String) The Organization ID of the calling Terraform Workspace.
+- `project_id` (String) The Project ID of the calling Terraform Workspace.
+- `workspace_id` (String) The Workspace ID of the calling Terraform Workspace.

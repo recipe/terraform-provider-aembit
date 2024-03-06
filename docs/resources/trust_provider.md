@@ -83,16 +83,32 @@ resource "aembit_trust_provider" "kerberos" {
 
 ### Optional
 
+- `aws_ecs_role` (Attributes) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_ecs_role))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_metadata))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
 - `description` (String) Description for the Trust Provider.
+- `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--gcp_identity))
+- `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--github_action))
 - `is_active` (Boolean) Active status of the Trust Provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--kerberos))
+- `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--kubernetes_service_account))
 - `tags` (Map of String) Tags are key-value pairs.
+- `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--terraform_workspace))
 
 ### Read-Only
 
 - `id` (String) Unique identifier of the Trust Provider.
+
+<a id="nestedatt--aws_ecs_role"></a>
+### Nested Schema for `aws_ecs_role`
+
+Optional:
+
+- `account_id` (String) The ID of the AWS account that is hosting the ECS Task.
+- `assumed_role` (String) The Name of the AWS IAM Role which is running the ECS Task.
+- `role_arn` (String) The ARN of the AWS IAM Role which is running the ECS Task.
+- `username` (String) The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).
+
 
 <a id="nestedatt--aws_metadata"></a>
 ### Nested Schema for `aws_metadata`
@@ -126,6 +142,24 @@ Optional:
 - `vm_id` (String) Unique identifier for the Virtual Machine.
 
 
+<a id="nestedatt--gcp_identity"></a>
+### Nested Schema for `gcp_identity`
+
+Optional:
+
+- `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
+
+
+<a id="nestedatt--github_action"></a>
+### Nested Schema for `github_action`
+
+Optional:
+
+- `actor` (String) The GitHub Actor which initiated the GitHub Action.
+- `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
+- `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+
+
 <a id="nestedatt--kerberos"></a>
 ### Nested Schema for `kerberos`
 
@@ -138,5 +172,29 @@ Optional:
 - `principal` (String) The Kerberos Principal of the authenticated Agent Proxy.
 - `realm` (String) The Kerberos Realm of the authenticated Agent Proxy.
 - `source_ip` (String) The Source IP Address of the authenticated Agent Proxy.
+
+
+<a id="nestedatt--kubernetes_service_account"></a>
+### Nested Schema for `kubernetes_service_account`
+
+Optional:
+
+- `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
+- `namespace` (String) The Namespace of the Kubernetes Service Account Token.
+- `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
+- `pod_name` (String) The Pod Name of the Kubernetes Service Account Token.
+- `public_key` (String) The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.
+- `service_account_name` (String) The Service Account Name of the Kubernetes Service Account Token.
+- `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
+
+
+<a id="nestedatt--terraform_workspace"></a>
+### Nested Schema for `terraform_workspace`
+
+Optional:
+
+- `organization_id` (String) The Organization ID of the calling Terraform Workspace.
+- `project_id` (String) The Project ID of the calling Terraform Workspace.
+- `workspace_id` (String) The Workspace ID of the calling Terraform Workspace.
 
 
