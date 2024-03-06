@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -201,7 +202,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
-	client, err := aembit.NewClient(aembit.URLBuilder{}, &token)
+	client, err := aembit.NewClient(aembit.URLBuilder{}, &token, getModuleVersion())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Aembit API Client",
@@ -219,7 +220,15 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	resp.DataSourceData = client
 	resp.ResourceData = client
 
-	tflog.Info(ctx, "Configured Aembit client", map[string]any{"success": true})
+	tflog.Info(ctx, fmt.Sprintf("Configured Aembit client (%s)", getModuleVersion()), map[string]any{"success": true})
+}
+
+func getModuleVersion() string {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
+	}
+	return bi.Main.Version
 }
 
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
