@@ -2,6 +2,7 @@ package provider
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -52,6 +53,21 @@ func TestAccAgentControllerResources(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAgentControllerResource_Validation(t *testing.T) {
+	emptyNameFile, _ := os.ReadFile("../../tests/agent_controllers/TestAccAgentControllerResource.tfempty")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config:      string(emptyNameFile),
+				ExpectError: regexp.MustCompile(`Attribute name string length must be at least 1`), // <-- should match any error at all
+			},
 		},
 	})
 }

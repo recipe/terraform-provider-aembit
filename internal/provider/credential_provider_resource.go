@@ -72,6 +72,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description for the Credential Provider.",
