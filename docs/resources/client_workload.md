@@ -50,7 +50,6 @@ Required:
 
 - `type` (String) Client identity type. Possible values are: 
 	* `aembitClientId`
-	* `awsEcsServiceName`
 	* `awsEcsTaskFamily`
 	* `gcpIdentityToken`
 	* `githubIdTokenSubject`
