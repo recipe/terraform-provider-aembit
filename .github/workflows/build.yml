@@ -1,10 +1,7 @@
 # Terraform Provider Testing Build workflow.
 name: Build for QA
-
-# This GitHub action creates a release when a tag that matches the pattern
-# "v*" (e.g. v0.1.0) is created.
 on:
-  pull_request:
+  push:
     branches:
       - 'main'
 
@@ -19,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  goreleaser-qa:
+  goreleaser:
     name: GoReleaser Build for QA
     runs-on: ubuntu-latest
     steps:
@@ -40,4 +37,28 @@ jobs:
         with:
           name: terraform-provider-aembit
           path: dist
+          retention-days: 14
+
+  docs:
+    name: Generate Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - run: go generate ./...
+      - name: git diff
+        run: |
+          git diff --compact-summary --exit-code || \
+            (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+      - name: Archive QA Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-aembit-docs
+          path: docs
           retention-days: 14
