@@ -269,7 +269,11 @@ func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentContr
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.TrustProviderID = types.StringValue(dto.TrustProviderID)
+	if len(dto.TrustProviderID) > 0 {
+		model.TrustProviderID = types.StringValue(dto.TrustProviderID)
+	} else {
+		model.TrustProviderID = types.StringNull()
+	}
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	return model
