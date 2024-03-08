@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccAgentControllerResource_WithTrustProvider(t *testing.T) {
+func TestAccAgentControllerResources(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/agent_controllers/TestAccAgentControllerResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/agent_controllers/TestAccAgentControllerResource.tfmod")
 
@@ -20,12 +20,14 @@ func TestAccAgentControllerResource_WithTrustProvider(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "name", "TF Acceptance Azure Trust Provider"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.device_code", "name", "TF Acceptance Device Code"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.color", "blue"),
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_agent_controller.azure_tp", "id"),
+					resource.TestCheckResourceAttrSet("aembit_agent_controller.device_code", "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_agent_controller.azure_tp", "id"),
 				),
@@ -42,6 +44,7 @@ func TestAccAgentControllerResource_WithTrustProvider(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "name", "TF Acceptance Azure Trust Provider - Modified"),
+					resource.TestCheckResourceAttr("aembit_agent_controller.device_code", "name", "TF Acceptance Device Code - Modified"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_agent_controller.azure_tp", "tags.color", "orange"),

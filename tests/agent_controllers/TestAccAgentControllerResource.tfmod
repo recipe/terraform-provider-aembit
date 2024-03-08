@@ -1,6 +1,13 @@
 provider "aembit" {
 }
 
+resource "aembit_agent_controller" "device_code" {
+	name = "TF Acceptance Device Code - Modified"
+    description = "device code agent controller"
+	is_active = true
+    
+}
+
 resource "aembit_agent_controller" "azure_tp" {
 	name = "TF Acceptance Azure Trust Provider - Modified"
 	is_active = true
