@@ -66,7 +66,7 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
-    is_active = false
+    is_active = true
     client_workload = aembit_client_workload.first_client.id
     trust_providers = [
         aembit_trust_provider.azure1.id

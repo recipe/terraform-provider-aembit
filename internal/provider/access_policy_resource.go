@@ -230,13 +230,16 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	// Check if Access Policy is Active
+	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		resp.Diagnostics.AddError(
-			"Error Deleting Access Policy",
-			"Access Policy is active and cannot be deleted. Please mark the policy as inactive first.",
-		)
-		return
+		_, err := r.client.DisableAccessPolicy(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Access Policy",
+				"Could not disable Access Policy, unexpected error: "+err.Error(),
+			)
+			return
+		}
 	}
 
 	// Delete existing Access Policy
