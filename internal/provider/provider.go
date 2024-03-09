@@ -138,15 +138,19 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		stackDomain = "useast2.aembit.io"
 	}
 
-	if !config.Tenant.IsNull() {
+	if !config.Tenant.IsNull() && len(config.Tenant.ValueString()) > 0 {
 		tenant = config.Tenant.ValueString()
 	}
-	if !config.Token.IsNull() {
+	if !config.Token.IsNull() && len(config.Token.ValueString()) > 0 {
 		token = config.Token.ValueString()
 	}
 
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
 	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
+	if !config.ClientID.IsNull() && len(config.ClientID.ValueString()) > 0 {
+		// If there is a provider block ClientID, prefer that
+		aembitClientID = config.ClientID.ValueString()
+	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
@@ -157,13 +161,19 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 				if err == nil {
 					token = roleToken
 				} else {
-					fmt.Printf("WARNING: Failed to get Aembit API Role Token: %v\n", err)
+					tflog.Warn(ctx, "Failed to get Aembit API Role Token: %v", map[string]interface{}{
+						"error": err,
+					})
 				}
 			} else {
-				fmt.Printf("WARNING: Failed to get Aembit Token: %v\n", err)
+				tflog.Warn(ctx, "Failed to get Aembit Token: %v", map[string]interface{}{
+					"error": err,
+				})
 			}
 		} else {
-			fmt.Printf("WARNING: Failed to get ID Token: %v\n", err)
+			tflog.Warn(ctx, "Failed to get ID Token: %v", map[string]interface{}{
+				"error": err,
+			})
 		}
 	}
 
