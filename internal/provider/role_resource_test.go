@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccRoleResource(t *testing.T) {
+	resourceID := "aembit_role.role"
 	createFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tfmod")
 
@@ -26,16 +27,16 @@ func TestAccRoleResource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_role.role", "name", fmt.Sprintf("TF Acceptance Role %d", randID)),
+					resource.TestCheckResourceAttr(resourceID, "name", fmt.Sprintf("TF Acceptance Role %d", randID)),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_role.role", "id"),
+					resource.TestCheckResourceAttrSet(resourceID, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_role.role", "id"),
+					resource.TestCheckResourceAttrSet(resourceID, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_role.role",
+				ResourceName:      resourceID,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -44,7 +45,7 @@ func TestAccRoleResource(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_role.role", "name", fmt.Sprintf("TF Acceptance Role %d - Modified", randID)),
+					resource.TestCheckResourceAttr(resourceID, "name", fmt.Sprintf("TF Acceptance Role %d - Modified", randID)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
