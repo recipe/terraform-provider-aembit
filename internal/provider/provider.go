@@ -242,6 +242,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAccessConditionResource,
 		NewAccessPolicyResource,
 		NewAgentControllerResource,
+		NewRoleResource,
 	}
 }
 
@@ -256,6 +257,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewAccessPoliciesDataSource,
 		NewAgentControllersDataSource,
 		NewAgentControllerDeviceCodeDataSource,
+		NewRolesDataSource,
 	}
 }
 
