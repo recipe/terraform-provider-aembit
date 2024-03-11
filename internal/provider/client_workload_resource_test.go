@@ -15,8 +15,8 @@ func TestAccClientWorkloadResource(t *testing.T) {
 	modifyFile, _ := os.ReadFile("../../tests/client/TestAccClientWorkloadResource.tfmod")
 
 	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Role", fmt.Sprintf("TF Acceptance Role %d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "TF Acceptance Role", fmt.Sprintf("TF Acceptance Role %d", randID))
+	createFileConfig := strings.ReplaceAll(string(createFile), "unittest1namespace", fmt.Sprintf("unittest1namespace%d", randID))
+	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "unittest1namespace", fmt.Sprintf("unittest1namespace%d", randID))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
