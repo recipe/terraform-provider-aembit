@@ -11,13 +11,15 @@ import (
 )
 
 func TestAccRoleResource(t *testing.T) {
-	resourceID := "aembit_role.role"
+	const resourceID string = "aembit_role.role"
 	createFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tfmod")
 
 	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Role", fmt.Sprintf("TF Acceptance Role %d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "TF Acceptance Role", fmt.Sprintf("TF Acceptance Role %d", randID))
+	createResourceName := fmt.Sprintf("TF Acceptance Role %d", randID)
+	modifyResourceName := fmt.Sprintf("TF Acceptance Role %d - Modified", randID)
+	createFileConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Role", createResourceName)
+	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "TF Acceptance Role - Modified", modifyResourceName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -27,7 +29,7 @@ func TestAccRoleResource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr(resourceID, "name", fmt.Sprintf("TF Acceptance Role %d", randID)),
+					resource.TestCheckResourceAttr(resourceID, "name", createResourceName),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(resourceID, "id"),
 					// Verify placeholder ID is set
@@ -45,7 +47,7 @@ func TestAccRoleResource(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(resourceID, "name", fmt.Sprintf("TF Acceptance Role %d - Modified", randID)),
+					resource.TestCheckResourceAttr(resourceID, "name", modifyResourceName),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
