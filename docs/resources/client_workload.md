@@ -52,12 +52,12 @@ Required:
 	* `aembitClientId`
 	* `awsEcsTaskFamily`
 	* `gcpIdentityToken`
-	* `githubIdTokenSubject`
 	* `githubIdTokenRepository`
+	* `githubIdTokenSubject`
 	* `hostname`
 	* `k8sNamespace`
-	* `k8sPodNamePrefix`
 	* `k8sPodName`
+	* `k8sPodNamePrefix`
 	* `k8sServiceAccountName`
 	* `k8sServiceAccountUID`
 	* `processName`

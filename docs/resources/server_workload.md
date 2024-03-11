@@ -107,7 +107,7 @@ Required:
 
 Optional:
 
-- `config` (String) Server Workload Service authentication config. This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme.
+- `config` (String) Server Workload Service authentication config. <br>This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme. <br>**Note:** This value is required in cases where an HTTP Header or Query Parameter is required, for example with `HTTP Authentication` and scheme `Header`.
 
 
 

@@ -92,12 +92,12 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
 								"\t* `awsEcsTaskFamily`\n" +
 								"\t* `gcpIdentityToken`\n" +
-								"\t* `githubIdTokenSubject`\n" +
 								"\t* `githubIdTokenRepository`\n" +
+								"\t* `githubIdTokenSubject`\n" +
 								"\t* `hostname`\n" +
 								"\t* `k8sNamespace`\n" +
-								"\t* `k8sPodNamePrefix`\n" +
 								"\t* `k8sPodName`\n" +
+								"\t* `k8sPodNamePrefix`\n" +
 								"\t* `k8sServiceAccountName`\n" +
 								"\t* `k8sServiceAccountUID`\n" +
 								"\t* `processName`\n" +
@@ -113,12 +113,12 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									//"awsEcsServiceName",	// Hiding for now
 									"awsEcsTaskFamily",
 									"gcpIdentityToken",
-									"githubIdTokenSubject",
 									"githubIdTokenRepository",
+									"githubIdTokenSubject",
 									"hostname",
 									"k8sNamespace",
-									"k8sPodNamePrefix",
 									"k8sPodName",
+									"k8sPodNamePrefix",
 									"k8sServiceAccountName",
 									"k8sServiceAccountUID",
 									"processName",

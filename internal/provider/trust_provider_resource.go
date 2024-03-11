@@ -62,6 +62,7 @@ func (r *trustProviderResource) Configure(_ context.Context, req resource.Config
 // Schema defines the schema for the resource.
 func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "**Note:** One and only one nested schema (e.g. `aws_metadata`) must be provided for the Trust Provider to be configured.",
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{

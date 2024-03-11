@@ -96,7 +96,7 @@ Read-Only:
 <a id="nestedatt--api_key"></a>
 ### Nested Schema for `api_key`
 
-Optional:
+Required:
 
 - `api_key` (String, Sensitive) API Key secret of the Credential Provider.
 
@@ -141,11 +141,11 @@ Read-Only:
 Required:
 
 - `client_id` (String) Client ID for the OAuth Credential Provider.
+- `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
 - `token_url` (String) Token URL for the OAuth Credential Provider.
 
 Optional:
 
-- `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
 - `scopes` (String) Scopes for the OAuth Credential Provider.
 
 
@@ -165,7 +165,7 @@ Read-Only:
 <a id="nestedatt--username_password"></a>
 ### Nested Schema for `username_password`
 
-Optional:
+Required:
 
 - `password` (String, Sensitive) Password of the Credential Provider.
 - `username` (String) Username of the Credential Provider.

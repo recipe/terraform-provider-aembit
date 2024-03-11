@@ -115,7 +115,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Attributes: map[string]schema.Attribute{
 					"api_key": schema.StringAttribute{
 						Description: "API Key secret of the Credential Provider.",
-						Optional:    true,
+						Required:    true,
 						Sensitive:   true,
 					},
 				},
@@ -200,7 +200,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 					"client_secret": schema.StringAttribute{
 						Description: "Client Secret for the OAuth Credential Provider.",
-						Optional:    true,
+						Required:    true,
 						Sensitive:   true,
 					},
 					"scopes": schema.StringAttribute{
@@ -215,11 +215,11 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Attributes: map[string]schema.Attribute{
 					"username": schema.StringAttribute{
 						Description: "Username of the Credential Provider.",
-						Optional:    true,
+						Required:    true,
 					},
 					"password": schema.StringAttribute{
 						Description: "Password of the Credential Provider.",
-						Optional:    true,
+						Required:    true,
 						Sensitive:   true,
 					},
 				},
