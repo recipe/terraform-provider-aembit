@@ -29,7 +29,7 @@ Aembit supports authentication to the Aembit API using a native authentication c
 After configuring these Aembit resources, the Client ID from the Trust Provider can be configured for the Aembit Terraform Provider, enabling automatic native authentication for the configured Workload.
 The Client ID can be configured using the `client_id` field in the Aembit provider configuration block or with the `AEMBIT_CLIENT_ID` environment variable.
 
-<div style="background: #d1ecf1; padding: 0.75rem 1.25rem; margin: 0 0 1rem 0; border-radius: 8px;">:grey_exclamation: <b>Terraform Cloud Configuration</b>
+<div style="background: rgba(209, 236, 241, 0.3); padding: 0.75rem 1.25rem; margin: 0 0 1rem 0; border-radius: 8px;">:grey_exclamation: <b>Terraform Cloud Configuration</b>
 <br>Setting the environment variable TFC_WORKLOAD_IDENTITY_AUDIENCE is required for Terraform Cloud Workspace ID Tokens. The value for this variable will be provided by your Aembit Cloud tenant Trust Provider and references your tenant-specific endpoint.</div>
 
 #### Sample Terraform Config
